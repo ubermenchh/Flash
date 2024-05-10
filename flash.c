@@ -81,14 +81,17 @@ Vector2d Normalize2d(Vector2d v) {
 }
 
 Vector2d Zeros2d(void) {
+    /* Returns a 2d vector of 0s -> [0.0 0.0] */
     return (Vector2d){0.0, 0.0};
 }
 
 Vector2d Ones2d(void) {
+    /* Returns a 2d vector of 1s -> [1.0 1.0] */
     return (Vector2d){1.0, 1.0};
 }
 
 Vector2d Init2d(int seed) {
+    /* Initializes a 2d vector randomly */
     if (seed != 0) {
         srand(seed);
     } else {
@@ -103,6 +106,12 @@ Vector2d Copy2d(Vector2d v) {
 
 Vector2d Multiply2d(Vector2d v, Vector2d w){
     return (Vector2d){v.x * w.x, v.y * w.y};
+}
+
+float Projection2d(Vector2d v, Vector2d w) {
+    float vdotw = DotProduct2d(v, w);
+    float mag_w = Norm2d(w);
+    return vdotw / mag_w;
 }
 
 /*
@@ -189,3 +198,104 @@ Vector3d Multiply3d(Vector3d v, Vector3d w){
     return (Vector3d){v.x * w.x, v.y * w.y, v.z * w.z};
 }
 
+float Projection3d(Vector3d v, Vector3d w) {
+    float vdotw = DotProduct3d(v, w);
+    float mag_w = Norm3d(w);
+    return vdotw / mag_w;
+}
+
+/*
+****************************
+**********MATRICES**********
+****************************
+*/
+
+Matrix* InitMatrix(int rows, int cols) {
+    Matrix* matrix = (Matrix*)malloc(sizeof(Matrix));
+    if (matrix == NULL) return NULL;
+
+    matrix->rows = rows;
+    matrix->cols = cols;
+
+    matrix->data = (double*)calloc(rows * cols, sizeof(double));
+    if (matrix->data == NULL) {
+        free(matrix);
+        return NULL;
+    }
+    return matrix;
+}
+
+void FreeMatrix(Matrix* m) {
+    free(m->data);
+    free(m);
+}
+/*
+Matrix* RandMatrix(int rows, int cols) {
+    Matrix* m = InitMatrix(rows, cols);
+    srand(time(NULL));
+    
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            m->data[i][j] = (double)rand() / (double)RAND_MAX; 
+        }
+    }
+}
+*/ 
+
+void SetElements(Matrix* m, double* values) {
+    int size = m->rows * m->cols;
+    for (int i = 0; i < size; i++) {
+        m->data[i] = values[i];
+    }
+}
+
+void PrintMatrix(Matrix* m) {
+    int max_digits = 0;
+    double max_val = 0;
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            double val = fabs(m->data[i * m->cols + j]);
+            if (val > max_val) {
+                max_val = val;
+            }
+        }
+    }
+
+    max_digits = (int)log10(max_val) + 1 + 8;
+
+    printf("[");
+    for (int i = 0; i < m->rows; i++) {
+        if (i == 0) {
+            printf("[");
+        } else {
+            printf(" [");
+        }
+        for (int j = 0; j < m->cols; j++) {
+            printf("%*.*f ", max_digits, 6, m->data[i * m->cols + j]);
+        }
+        if (i != m->rows-1) {
+            printf(" ]\n");
+        } else {
+            printf(" ]");
+        }
+    }
+    printf("]\n");
+}
+
+Matrix* RandMatrix(int rows, int cols, int seed) {
+    if (seed != 0) {
+        srand(0);
+    } else {
+        srand(time(NULL));
+    }
+
+    Matrix* m = InitMatrix(rows, cols);
+    int size = rows * cols;
+    double rand_array[size];
+    for (int i = 0; i < size; i++) {
+        rand_array[i] = (double)rand() / (double)RAND_MAX;
+    }
+    SetElements(m, rand_array);
+    return m;
+}
