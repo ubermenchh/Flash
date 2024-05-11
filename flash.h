@@ -4,6 +4,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
 
 #define MAX_ROWS 1024
 #define MAX_COLS 1024
@@ -65,3 +66,12 @@ void FreeMatrix(Matrix* m);
 void SetElements(Matrix* m, double* values);
 void PrintMatrix(Matrix* m);
 Matrix* RandMatrix(int rows, int cols, int seed);
+Matrix* matadd(Matrix* m, Matrix* n);
+Matrix* matsub(Matrix* m, Matrix* n);
+Matrix* scalarmul(Matrix* m, int x);
+Matrix* transpose(Matrix* m);
+Matrix* ones(int rows, int cols);
+Matrix* zeros(int rows, int cols);
+Matrix* identity(int side);
+Matrix* matmul(Matrix* m, Matrix* n);
+Matrix* slice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols);

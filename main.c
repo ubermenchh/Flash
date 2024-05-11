@@ -73,22 +73,32 @@ int main(void) {
     printf("norm of a: %f | norm of b: %f\n", norm_a, norm_b);
     prbin/intf("Projection of a on b: %f\n", aprojb);
     */
-
-    Matrix* m = InitMatrix(2, 2);
-    Matrix* n = InitMatrix(2, 2);
-    Matrix* r = RandMatrix(4, 4, 69); 
-    double m_values[] = {1, 2, 3, 4};
-    double n_values[] = {9, 8, 7, 6};
+    int x = 10;
+    Matrix* m = InitMatrix(3, 2);
+    Matrix* n = InitMatrix(2, 3);
+    Matrix* r = RandMatrix(4, 5, 0);
+    double m_values[] = {1, 2, 3, 4, 5, 6};
+    double n_values[] = {-3, -4, -2, 0, 1, 5};
     SetElements(m, m_values);
     SetElements(n, n_values);
+    Matrix* s = matmul(m, n);
+    Matrix* new_m = slice(m, 1, 3, 0, 2);
+    Matrix* i = identity(5);
     printf("Matrix m: \n");
     PrintMatrix(m);
     printf("Matrix n: \n");
     PrintMatrix(n);
     printf("Matrix r: \n");
     PrintMatrix(r);
+    printf("Matrix s: \n");
+    PrintMatrix(s);
+    printf("Matrix new_m: \n");
+    PrintMatrix(new_m);
 
     FreeMatrix(m);
     FreeMatrix(n);
     FreeMatrix(r);
+    FreeMatrix(s);
+    FreeMatrix(new_m);
+    FreeMatrix(i);
 }

@@ -251,7 +251,8 @@ void SetElements(Matrix* m, double* values) {
 
 void PrintMatrix(Matrix* m) {
     int max_digits = 0;
-    double max_val = 0;
+    double max_val = 0.0;
+    double min_val = 0.0;
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
@@ -259,10 +260,17 @@ void PrintMatrix(Matrix* m) {
             if (val > max_val) {
                 max_val = val;
             }
+            if (val < min_val || (min_val == 0.0)) {
+                min_val = val;
+            }
         }
     }
 
-    max_digits = (int)log10(max_val) + 1 + 8;
+    if ((max_val == 0.0 && min_val == 0.0) || (max_val == 1.0 && min_val == 1.0)) {
+        max_digits = 1;
+    } else {
+        max_digits = (int)log10(max_val) + 1 + 8;
+    }
 
     printf("[");
     for (int i = 0; i < m->rows; i++) {
@@ -272,7 +280,7 @@ void PrintMatrix(Matrix* m) {
             printf(" [");
         }
         for (int j = 0; j < m->cols; j++) {
-            printf("%*.*f ", max_digits, 6, m->data[i * m->cols + j]);
+            printf("%*.*f ", max_digits, 5, m->data[i * m->cols + j]);
         }
         if (i != m->rows-1) {
             printf(" ]\n");
@@ -298,4 +306,122 @@ Matrix* RandMatrix(int rows, int cols, int seed) {
     }
     SetElements(m, rand_array);
     return m;
+}
+
+Matrix* matadd(Matrix* m, Matrix* n) {
+    assert(m->rows * m->cols == n->rows * n->cols);
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            out->data[i * m->cols + j] = m->data[i * m->cols + j] + n->data[i * n->cols + j];
+        }
+    }
+    return out;
+}
+
+Matrix* matsub(Matrix* m, Matrix* n) {
+    assert(m->rows * m->cols == n->rows * n->cols);
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            out->data[i * m->cols + j] = m->data[i * m->cols + j] - n->data[i * n->cols + j];
+        }
+    }
+    return out;
+}
+
+Matrix* scalarmul(Matrix* m, int x) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            out->data[i * m->cols + j] = m->data[i * m->cols + j] * x;
+        }
+    }
+    return out;
+}
+
+Matrix* transpose(Matrix* m) {
+    Matrix* out = InitMatrix(m->cols, m->rows);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            out->data[j * m->rows + i] = m->data[i * m->cols + j];
+        }
+    }
+    return out;
+}
+
+Matrix* zeros(int rows, int cols) {
+    Matrix* out = InitMatrix(rows, cols);
+    int size = rows * cols;
+    memset(out->data, 0, size * sizeof(double)); 
+    return out;
+}
+
+Matrix* ones(int rows, int cols) {
+    Matrix* out = InitMatrix(rows, cols);
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            out->data[i * out->cols + j] = 1.0;
+        }
+    }
+    return out;
+}
+
+Matrix* identity(int side) {
+    Matrix* out = zeros(side, side);
+    for (int i = 0, j = 0; i < out->rows && j < out->cols; i++, j++) {
+        out->data[i * out->cols + j] = 1.0; 
+    }
+    return out;
+}
+
+Matrix* matmul(Matrix* m, Matrix* n) {
+    assert(m->cols == n->rows);
+    Matrix* out = InitMatrix(m->rows, n->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < n->cols; j++) {
+            double sum = 0.0;
+            for (int k = 0; k < m->cols; k++) {
+                sum += m->data[i * m->cols + k] * n->data[k * n->cols + j];
+            }
+            out->data[i * out->cols + j] = sum;
+        }
+    }
+    return out;
+}
+
+Matrix* slice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols) {
+    assert(from_rows >= 0 && from_cols >= 0 && to_rows <= m->rows && to_cols <= m->cols);
+    int new_rows = to_rows - from_rows;
+    int new_cols = to_cols - from_cols;
+
+    Matrix* out = InitMatrix(new_rows, new_cols);
+    for (int i = from_rows, out_i = 0; (i < to_rows && out_i < out->rows); i++, out_i++) {
+        for (int j = from_cols, out_j = 0; (j < to_cols && out_j < out->cols); j++, out_j++) {
+            out->data[out_i * out->cols + out_j] = m->data[i * m->cols + j];
+        }
+    }
+    return out;
+}
+
+double determinant(Matrix* m) {
+    assert(m->rows == m->cols);
+    double out = 0;
+    if (m->rows == 1) {
+        out = m->data[0];
+    } else if (m->rows == 2) {
+        out = (m->data[0] * m->data[3]) - (m->data[1] * m->data[2]);
+    } else {
+       for (int i = 0; i < m->rows; i++) {
+           for (int j = 0; j < m->cols; j++) {
+
+           }
+       }         
+    }
+    return out;
 }

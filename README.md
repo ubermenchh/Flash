@@ -1,13 +1,6 @@
 # Flash
 my little linear algebra library
 
-- Supports 2d and 3d Vectors now, Matrices incoming
-
-#### TODO:
-- Matrices 
-- Some more vector functions
-- might get rid of seperate 2d and 3d functions and make it dynamic (idk how but we'll see)
-
 ### Docs
 
 #### 2D Vector Functions
@@ -45,3 +38,41 @@ my little linear algebra library
 - `Vector3d Init3d(int seed)`
 - `Vector3d Copy3d(Vector3d v)`
 - `Vector3d Multiply3d(Vector3d v, Vector3d w)`
+
+#### Matrix Functions
+- `Matrix* InitMatrix(int rows, int cols);`
+- `void FreeMatrix(Matrix* m);`
+- `void SetElements(Matrix* m, double* values);`
+- `void PrintMatrix(Matrix* m);`
+- `Matrix* RandMatrix(int rows, int cols, int seed);`
+- `Matrix* matadd(Matrix* m, Matrix* n);`
+- `Matrix* matsub(Matrix* m, Matrix* n);`
+- `Matrix* scalarmul(Matrix* m, int x);`
+- `Matrix* transpose(Matrix* m);`
+- `Matrix* ones(int rows, int cols);`
+- `Matrix* zeros(int rows, int cols);`
+- `Matrix* identity(int side);`
+- `Matrix* matmul(Matrix* m, Matrix* n);`
+- `Matrix* slice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols);`
+
+
+#### TODO: 
+- Matrix functions
+    - [x] addition
+    - [x] substract
+    - [x] scalar multiplication
+    - [x] matrix multiplication
+    - [x] transpose
+    - [ ] inverse
+    - [ ] determinant
+    - [ ] trace
+    - [ ] rank 
+    - [ ] norm (frobenius, l1, l2, infinity)
+    - [ ] factorization (LU, QR, Cholesky, SVD)
+    - [ ] Eigenvectors and Eigenvalues 
+    - [ ] concatenation of matrices
+    - [x] slice
+    - [x] initialization (random, zeros, ones, identity)
+- might get rid of seperate 2d and 3d functions and make it dynamic (idk how but we'll see)
+
+
