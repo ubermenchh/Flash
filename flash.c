@@ -1,9 +1,9 @@
 #include "flash.h"
 
 /*
-****************************
-***** HELPER FUNCTIONS *****
-****************************
+*****************************************************
+***************** HELPER FUNCTIONS ******************
+*****************************************************
 */
 float radian_to_degrees(float x) {
     /* Converts radian to degree */
@@ -11,9 +11,9 @@ float radian_to_degrees(float x) {
 }
 
 /*
-*******************************
-***** 2D VECTOR FUNCTIONS *****
-*******************************
+*****************************************************
+*************** 2D VECTOR FUNCTIONS *****************
+*****************************************************
 */
 Vector2d Add2d(Vector2d v, Vector2d w) {
     /* Adds two 2d vectors element-wise */ 
@@ -115,9 +115,9 @@ float Projection2d(Vector2d v, Vector2d w) {
 }
 
 /*
-*******************************
-***** 3D VECTOR FUNCTIONS *****
-*******************************
+*************************************************
+************* 3D VECTOR FUNCTIONS ***************
+*************************************************
 */
 Vector3d Add3d(Vector3d v, Vector3d w) {
     return (Vector3d){v.x + w.x, v.y + w.y, v.z + w.z};
@@ -205,9 +205,9 @@ float Projection3d(Vector3d v, Vector3d w) {
 }
 
 /*
-****************************
-**********MATRICES**********
-****************************
+******************************************
+*************** MATRICES *****************
+******************************************
 */
 
 Matrix* InitMatrix(int rows, int cols) {
@@ -229,18 +229,6 @@ void FreeMatrix(Matrix* m) {
     free(m->data);
     free(m);
 }
-/*
-Matrix* RandMatrix(int rows, int cols) {
-    Matrix* m = InitMatrix(rows, cols);
-    srand(time(NULL));
-    
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            m->data[i][j] = (double)rand() / (double)RAND_MAX; 
-        }
-    }
-}
-*/ 
 
 void SetElements(Matrix* m, double* values) {
     int size = m->rows * m->cols;
@@ -409,19 +397,179 @@ Matrix* slice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols)
     return out;
 }
 
+void LUDecomp(Matrix* A, Matrix** L, Matrix** U) {
+    int n = A->rows;
+    assert(A->rows == A->cols);
+
+    *L = InitMatrix(n, n);
+    *U = InitMatrix(n, n);
+
+    for (int i = 0; i < n; i++) {
+        // upper triangular
+        for (int k = 0; k < n; k++) {
+            double sum = 0.0;
+            for (int j = 0; j < i; j++) {
+                sum += (*L)->data[i * n + j] * (*U)->data[j * n + k];
+            }
+            (*U)->data[i * n + k] = A->data[i * n + k] - sum;
+        }
+
+        // lower triangular
+        for (int k = i + 1; k < n; k++) {
+            double sum = 0.0;
+            for (int j = 0; j < i; j++) {
+                sum += (*L)->data[k * n + j] * (*U)->data[j * n + i];
+            }
+            (*L)->data[k * n + i] = (A->data[k * n + i] - sum) / (*U)->data[i * n + i];
+        }
+    
+        // diagonal elements of L 
+        (*L)->data[i * n + i] = 1.0;
+    }
+}
+
 double determinant(Matrix* m) {
     assert(m->rows == m->cols);
-    double out = 0;
-    if (m->rows == 1) {
-        out = m->data[0];
-    } else if (m->rows == 2) {
-        out = (m->data[0] * m->data[3]) - (m->data[1] * m->data[2]);
-    } else {
-       for (int i = 0; i < m->rows; i++) {
-           for (int j = 0; j < m->cols; j++) {
+    int n = m->rows;
+    double out = 0.0;
 
-           }
-       }         
+    if (n == 1) {
+        out = m->data[0];
+    } else if (n == 2) {
+        out = (m->data[0] * m->data[3]) - (m->data[1] * m->data[2]);
+        //printf("%f\n", out);
+    } else {
+        for (int i = 0; i < n; i++) {
+            Matrix* submatrix = InitMatrix(n-1, n-1);
+            int sub_row = 0, sub_col = 0;
+
+            for (int j = 1; j < n; j++) {
+                if (j != 0) {
+                    for (int k = 0; k < n; k++) {
+                        if (k != i) {
+                            submatrix->data[sub_row * (n-1) + sub_col] = m->data[j * n + k];
+                            sub_col++;
+                            if (sub_col == n-1) {
+                                sub_col = 0;
+                                sub_row++;
+                            }
+                        }
+                    }
+                } 
+            }
+            //printf("Sub-Matrix for row %d\n", i);
+            //PrintMatrix(submatrix);
+
+            out += (i % 2 == 0 ? 1 : -1) * m->data[i] * determinant(submatrix);
+            //printf("out = %f | m->data[i] = %f\n", out, m->data[i]);
+            FreeMatrix(submatrix);
+        }
     }
     return out;
+}
+
+double trace(Matrix* m) {
+    assert(m->rows == m->cols);
+
+    double out = 0.0;
+    int i = 0;
+    while (i < (m->rows*m->cols)) {
+        out += m->data[i];
+        i += m->rows+1;
+    }
+    return out;
+}
+
+double frobenius_norm(Matrix* m) {
+    double out = 0.0;
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            out += (m->data[i * m->cols + j] * m->data[i * m->cols + j]);
+        }
+    }
+    return sqrt(out);
+}
+
+double l1_norm(Matrix* m) {
+    double out = 0.0;
+
+    for (int i = 0; i < m->rows; i++) {
+        double col_sum = 0.0;
+        for (int j = 0; j < m->cols; j++) {
+            col_sum += fabs(m->data[j * m->rows + i]);
+        }
+        if (col_sum > out) {
+            out = col_sum;
+        }
+    }
+    return out;
+}
+
+double infinity_norm(Matrix* m) {
+    double out = 0.0;
+
+    for (int i = 0; i < m->rows; i++) {
+        double row_sum = 0.0;
+        for (int j = 0; j < m->cols; j++) {
+            row_sum += fabs(m->data[i * m->rows + j]);
+        }
+        if (row_sum > out) {
+            out = row_sum;
+        }
+    }
+    return out; 
+}
+
+double norm(Matrix* m, char* type) {
+    if ((strcmp(type, "frobenius") == 0) || (strcmp(type, "euclidean")) == 0) {
+        return frobenius_norm(m);
+    } else if (strcmp(type, "l1") == 0) {
+        return l1_norm(m);
+    } else if (strcmp(type, "infinity") == 0){
+        return infinity_norm(m);
+    } else {
+        printf("Invalid type: enter 'frobenius', 'euclidean', 'l1', 'infinity'.");
+        printf("frobenius Norm: ");
+        return frobenius_norm(m);
+    }
+}
+
+Matrix* concat(Matrix* m, Matrix* n, int axis) {
+    if (axis == 0) {
+        assert(m->rows == n->rows);
+        int new_cols = m->cols + n->cols;
+        
+        Matrix* out = InitMatrix(m->rows, new_cols);
+        for (int i = 0; i < m->rows; i++) {
+            for (int j = 0; j < m->cols; j++) {
+                out->data[i * new_cols + j] = m->data[i * m->cols + j];    
+            }
+        }
+        for (int i = 0; i < n->rows; i++) {
+            for (int j = 0; j < n->cols; j++) {
+                out->data[i * new_cols + (j+m->rows)] = n->data[i * n->cols + j];
+            }
+        }
+        return out;
+    } else if (axis == 1) {
+        assert(m->cols == n->cols);
+        int new_rows = m->rows + n->rows;
+        
+        Matrix* out = InitMatrix(new_rows, m->cols);
+        for (int i = 0; i < m->rows; i++) {
+            for (int j = 0; j < m->cols; j++) {
+                out->data[i * m->rows + j] = m->data[i * m->rows + j];
+            }
+        }
+        for (int i = 0; i < n->rows; i++) {
+            for (int j = 0; j < n->cols; j++) {
+                out->data[(i) * m->rows + (j+(m->rows*m->cols))] = n->data[i * n->rows + j];
+            }
+        }
+        return out;
+
+    } else {
+        printf("Invaid axis: Use `0` for row-wise concatenation and `1` for column-wise.");
+        return zeros(m->rows, m->cols);
+    }
 }

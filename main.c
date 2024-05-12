@@ -74,31 +74,38 @@ int main(void) {
     prbin/intf("Projection of a on b: %f\n", aprojb);
     */
     int x = 10;
-    Matrix* m = InitMatrix(3, 2);
-    Matrix* n = InitMatrix(2, 3);
-    Matrix* r = RandMatrix(4, 5, 0);
-    double m_values[] = {1, 2, 3, 4, 5, 6};
-    double n_values[] = {-3, -4, -2, 0, 1, 5};
+    Matrix* m = InitMatrix(3, 3);
+    Matrix* n = InitMatrix(3, 3);
+    Matrix* p = InitMatrix(4, 4);
+    Matrix* r = RandMatrix(3, 3, 0);
+    double m_values[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+    double n_values[] = {-3, -4, -2, 0, 1, 5, 8, 2, -5};
+    double p_values[] = {1, 3, -8, 2, 4, -9, 0, 2, 1, 1, 5, -4, -5, -7, 8, 1};
     SetElements(m, m_values);
     SetElements(n, n_values);
-    Matrix* s = matmul(m, n);
-    Matrix* new_m = slice(m, 1, 3, 0, 2);
-    Matrix* i = identity(5);
+    SetElements(p, p_values);
+    double det_p = determinant(p);
+    double trace_p = trace(p);
+    double frob_norm = frobenius_norm(p);
+    double lone_norm = l1_norm(p);
+    double inf_norm = infinity_norm(p);
+    Matrix* a = concat(m, n, 0);
+    //Matrix* i = identity(5);
+    //printf("Matrix m: \n");
+    //PrintMatrix(m);
     printf("Matrix m: \n");
     PrintMatrix(m);
     printf("Matrix n: \n");
     PrintMatrix(n);
-    printf("Matrix r: \n");
-    PrintMatrix(r);
-    printf("Matrix s: \n");
-    PrintMatrix(s);
-    printf("Matrix new_m: \n");
-    PrintMatrix(new_m);
+    printf("Matrix a: \n");
+    PrintMatrix(a);
+
+    //printf("Matrix det_p: %f\n", det_p);
+    //printf("Frobenius Norm: %f | L1 Norm: %f | Infinity Norm: %f \n", norm(m, "frobenius"), norm(m, "l1"), norm(m, "infinity"));
 
     FreeMatrix(m);
     FreeMatrix(n);
     FreeMatrix(r);
-    FreeMatrix(s);
-    FreeMatrix(new_m);
-    FreeMatrix(i);
+    FreeMatrix(a);
+    FreeMatrix(p);
 }
