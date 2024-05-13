@@ -10,6 +10,11 @@ double radian_to_degrees(double x) {
     return (x * 180) / (double)M_PI;
 }
 
+void FreeMatrixTuple(MatrixTuple mt) {
+    FreeMatrix(mt.first);
+    FreeMatrix(mt.second);
+}
+
 /*
 *****************************************************
 ***************** VECTOR FUNCTIONS ******************
@@ -34,14 +39,14 @@ void VectorSetElements(Vector* v, double* values) {
     }
 }
 
-void vector_set(Vector* v, size_t index, double value) {
+void VectorSet(Vector* v, size_t index, double value) {
     if (index >= v->size) {
         return;
     }
     v->data[index] = value;
 }
 
-double vector_get(Vector* v, size_t index) {
+double VectorGet(Vector* v, size_t index) {
     if (index >= v->size) {
         return 0.0;
     }
@@ -53,10 +58,10 @@ void PrintVector(Vector* v) {
     for (int i = 0; i < v->size; i++) {
         printf(" %f", v->data[i]);
     }
-    printf(" ]), size=%zu)\n", v->size);
+    printf(" ]), size=%zu)\n\n", v->size);
 }
 
-Vector* vector_add(Vector* v, Vector* w) {
+Vector* VectorAdd(Vector* v, Vector* w) {
     assert(v->size == w->size);
     Vector* out = InitVector(v->size);
 
@@ -66,7 +71,7 @@ Vector* vector_add(Vector* v, Vector* w) {
     return out;
 }
 
-Vector* vector_sub(Vector* v, Vector* w) {
+Vector* VectorSub(Vector* v, Vector* w) {
     assert(v->size == w->size);
     Vector* out = InitVector(v->size);
 
@@ -76,7 +81,7 @@ Vector* vector_sub(Vector* v, Vector* w) {
     return out;
 }
 
-Vector* vector_scale(Vector* v, int x) {
+Vector* VectorScale(Vector* v, int x) {
     Vector* out = InitVector(v->size);
 
     for (int i = 0; i < out->size; i++) {
@@ -85,7 +90,7 @@ Vector* vector_scale(Vector* v, int x) {
     return out;
 }
 
-double vector_norm(Vector* v) {
+double VectorNorm(Vector* v) {
     double out = 0.0;
     for (int i = 0; i < v->size; i++) {
         out += (v->data[i] * v->data[i]);
@@ -93,7 +98,7 @@ double vector_norm(Vector* v) {
     return sqrt(out);
 }
 
-double vector_dotproduct(Vector* v, Vector* w) {
+double VectorDotProduct(Vector* v, Vector* w) {
     assert(v->size == w->size);
     double out = 0.0;
 
@@ -104,24 +109,24 @@ double vector_dotproduct(Vector* v, Vector* w) {
     return out;
 }
 
-double vector_angle(Vector* v, Vector* w) {
-    double norm_v = vector_norm(v);
-    double norm_w = vector_norm(w);
-    double dot_p = vector_dotproduct(v, w);
+double VectorAngle(Vector* v, Vector* w) {
+    double norm_v = VectorNorm(v);
+    double norm_w = VectorNorm(w);
+    double dot_p = VectorDotProduct(v, w);
 
     double out = dot_p / (norm_v * norm_w);
     return acos(out);
 }
 
-double vector_crossproduct(Vector* v, Vector* w) {
-    double norm_v = vector_norm(v);
-    double norm_w = vector_norm(w);
-    double angle = radian_to_degrees(vector_angle(v, w));
+double VectorCrossProduct(Vector* v, Vector* w) {
+    double norm_v = VectorNorm(v);
+    double norm_w = VectorNorm(w);
+    double angle = radian_to_degrees(VectorAngle(v, w));
 
     return (norm_v * norm_w) * sin(angle);
 }
 
-bool vector_equal(Vector* v, Vector* w) {
+bool VectorEqual(Vector* v, Vector* w) {
     if (v->size != w->size) {
         return false;
     }
@@ -133,17 +138,17 @@ bool vector_equal(Vector* v, Vector* w) {
     return true;
 }
 
-Vector* vector_normalize(Vector* v) {
-    float norm_v = vector_norm(v);
+Vector* VectorNormalize(Vector* v) {
+    float Norm_v = VectorNorm(v);
     Vector* out = InitVector(v->size);
 
     for (int i = 0; i < v->size; i++) {
-        out->data[i] = (v->data[i] / norm_v);
+        out->data[i] = (v->data[i] / Norm_v);
     }
     return out;
 }
 
-Vector* zeros_vector(size_t size) {
+Vector* ZerosMatrixVector(size_t size) {
     Vector* out = InitVector(size);
     for (int i = 0; i < size; i++) {
         out->data[i] = 0.0;
@@ -151,7 +156,7 @@ Vector* zeros_vector(size_t size) {
     return out;
 }
 
-Vector* ones_vector(size_t size) {
+Vector* OnessMatrixsMatrixVector(size_t size) {
     Vector* out = InitVector(size);
     for (int i = 0; i < size; i++) {
         out->data[i] = 1.0;
@@ -159,7 +164,7 @@ Vector* ones_vector(size_t size) {
     return out;
 }
 
-Vector* random_vector(size_t size, int seed) {
+Vector* RandomVector(size_t size, int seed) {
     if (seed != 0) {
         srand(seed);
     } else {
@@ -172,7 +177,7 @@ Vector* random_vector(size_t size, int seed) {
     return out;
 }
 
-Vector* vector_copy(Vector* v) {
+Vector* VectorCopy(Vector* v) {
     Vector* out = InitVector(v->size);
     for (int i = 0; i < v->size; i++) {
         out->data[i] = v->data[i];
@@ -180,7 +185,7 @@ Vector* vector_copy(Vector* v) {
     return out;
 }
 
-Vector* vector_multiply(Vector* v, Vector* w){
+Vector* VectorMultiply(Vector* v, Vector* w){
     assert(v->size == w->size);
     Vector* out = InitVector(v->size);
     for (int i = 0; i < v->size; i++) {
@@ -189,12 +194,23 @@ Vector* vector_multiply(Vector* v, Vector* w){
     return out;
 }
 
-double vector_projection(Vector* v, Vector* w) {
-    double vdotw = vector_dotproduct(v, w);
-    double mag_w = vector_norm(w);
+double VectorProjection(Vector* v, Vector* w) {
+    double vdotw = VectorDotProduct(v, w);
+    double mag_w = VectorNorm(w);
     return vdotw / mag_w;
 }
 
+Vector* VectorTransform(Vector* v, Matrix* m) {
+    assert(m->cols == v->size);
+    Vector* out = ZerosMatrixVector(m->rows);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            out->data[i] += (m->data[i * m->cols + j] * v->data[j]);
+        }
+    }
+    return out;
+}
 /*
 ******************************************
 *************** MATRICES *****************
@@ -251,7 +267,7 @@ void PrintMatrix(Matrix* m) {
         max_digits = (int)log10(max_val) + 1 + 8;
     }
 
-    printf("[");
+    printf("Matrix(data=[\n[");
     for (int i = 0; i < m->rows; i++) {
         if (i == 0) {
             printf("[");
@@ -268,6 +284,7 @@ void PrintMatrix(Matrix* m) {
         }
     }
     printf("]\n");
+    printf("], size=%dx%d)\n\n", m->rows, m->cols);
 }
 
 Matrix* RandMatrix(int rows, int cols, int seed) {
@@ -287,7 +304,7 @@ Matrix* RandMatrix(int rows, int cols, int seed) {
     return m;
 }
 
-Matrix* matadd(Matrix* m, Matrix* n) {
+Matrix* MatrixAdd(Matrix* m, Matrix* n) {
     assert(m->rows * m->cols == n->rows * n->cols);
     Matrix* out = InitMatrix(m->rows, m->cols);
 
@@ -299,7 +316,7 @@ Matrix* matadd(Matrix* m, Matrix* n) {
     return out;
 }
 
-Matrix* matsub(Matrix* m, Matrix* n) {
+Matrix* MatrixSub(Matrix* m, Matrix* n) {
     assert(m->rows * m->cols == n->rows * n->cols);
     Matrix* out = InitMatrix(m->rows, m->cols);
 
@@ -311,7 +328,7 @@ Matrix* matsub(Matrix* m, Matrix* n) {
     return out;
 }
 
-Matrix* scalarmul(Matrix* m, int x) {
+Matrix* MatrixScale(Matrix* m, int x) {
     Matrix* out = InitMatrix(m->rows, m->cols);
 
     for (int i = 0; i < m->rows; i++) {
@@ -322,7 +339,7 @@ Matrix* scalarmul(Matrix* m, int x) {
     return out;
 }
 
-Matrix* transpose(Matrix* m) {
+Matrix* MatrixTranspose(Matrix* m) {
     Matrix* out = InitMatrix(m->cols, m->rows);
 
     for (int i = 0; i < m->rows; i++) {
@@ -333,14 +350,14 @@ Matrix* transpose(Matrix* m) {
     return out;
 }
 
-Matrix* zeros(int rows, int cols) {
+Matrix* ZerosMatrix(int rows, int cols) {
     Matrix* out = InitMatrix(rows, cols);
     int size = rows * cols;
     memset(out->data, 0, size * sizeof(double)); 
     return out;
 }
 
-Matrix* ones(int rows, int cols) {
+Matrix* OnesMatrixsMatrix(int rows, int cols) {
     Matrix* out = InitMatrix(rows, cols);
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
@@ -350,15 +367,15 @@ Matrix* ones(int rows, int cols) {
     return out;
 }
 
-Matrix* identity(int side) {
-    Matrix* out = zeros(side, side);
+Matrix* IdentityMatrix(int side) {
+    Matrix* out = ZerosMatrix(side, side);
     for (int i = 0, j = 0; i < out->rows && j < out->cols; i++, j++) {
         out->data[i * out->cols + j] = 1.0; 
     }
     return out;
 }
 
-Matrix* matmul(Matrix* m, Matrix* n) {
+Matrix* MatrixMul(Matrix* m, Matrix* n) {
     assert(m->cols == n->rows);
     Matrix* out = InitMatrix(m->rows, n->cols);
 
@@ -374,7 +391,7 @@ Matrix* matmul(Matrix* m, Matrix* n) {
     return out;
 }
 
-Matrix* slice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols) {
+Matrix* MatrixSlice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols) {
     assert(from_rows >= 0 && from_cols >= 0 && to_rows <= m->rows && to_cols <= m->cols);
     int new_rows = to_rows - from_rows;
     int new_cols = to_cols - from_cols;
@@ -388,38 +405,39 @@ Matrix* slice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols)
     return out;
 }
 
-void LUDecomp(Matrix* A, Matrix** L, Matrix** U) {
+MatrixTuple LUDecomposition(Matrix* A) {
     int n = A->rows;
     assert(A->rows == A->cols);
 
-    *L = InitMatrix(n, n);
-    *U = InitMatrix(n, n);
+    Matrix* L = InitMatrix(n, n);
+    Matrix* U = InitMatrix(n, n);
 
     for (int i = 0; i < n; i++) {
         // upper triangular
         for (int k = 0; k < n; k++) {
             double sum = 0.0;
             for (int j = 0; j < i; j++) {
-                sum += (*L)->data[i * n + j] * (*U)->data[j * n + k];
+                sum += L->data[i * n + j] * U->data[j * n + k];
             }
-            (*U)->data[i * n + k] = A->data[i * n + k] - sum;
+            U->data[i * n + k] = A->data[i * n + k] - sum;
         }
 
         // lower triangular
         for (int k = i + 1; k < n; k++) {
             double sum = 0.0;
             for (int j = 0; j < i; j++) {
-                sum += (*L)->data[k * n + j] * (*U)->data[j * n + i];
+                sum += L->data[k * n + j] * U->data[j * n + i];
             }
-            (*L)->data[k * n + i] = (A->data[k * n + i] - sum) / (*U)->data[i * n + i];
+            L->data[k * n + i] = (A->data[k * n + i] - sum) / U->data[i * n + i];
         }
     
         // diagonal elements of L 
-        (*L)->data[i * n + i] = 1.0;
+        L->data[i * n + i] = 1.0;
     }
+    return (MatrixTuple){L, U}; 
 }
 
-double determinant(Matrix* m) {
+double MatrixDeterminant(Matrix* m) {
     assert(m->rows == m->cols);
     int n = m->rows;
     double out = 0.0;
@@ -451,7 +469,7 @@ double determinant(Matrix* m) {
             //printf("Sub-Matrix for row %d\n", i);
             //PrintMatrix(submatrix);
 
-            out += (i % 2 == 0 ? 1 : -1) * m->data[i] * determinant(submatrix);
+            out += (i % 2 == 0 ? 1 : -1) * m->data[i] * MatrixDeterminant(submatrix);
             //printf("out = %f | m->data[i] = %f\n", out, m->data[i]);
             FreeMatrix(submatrix);
         }
@@ -459,7 +477,7 @@ double determinant(Matrix* m) {
     return out;
 }
 
-double trace(Matrix* m) {
+double MatrixTrace(Matrix* m) {
     assert(m->rows == m->cols);
 
     double out = 0.0;
@@ -471,7 +489,7 @@ double trace(Matrix* m) {
     return out;
 }
 
-double frobenius_norm(Matrix* m) {
+double FrobeniusNorm(Matrix* m) {
     double out = 0.0;
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
@@ -481,7 +499,7 @@ double frobenius_norm(Matrix* m) {
     return sqrt(out);
 }
 
-double l1_norm(Matrix* m) {
+double L1Norm(Matrix* m) {
     double out = 0.0;
 
     for (int i = 0; i < m->rows; i++) {
@@ -496,7 +514,7 @@ double l1_norm(Matrix* m) {
     return out;
 }
 
-double infinity_norm(Matrix* m) {
+double InfiniyNorm(Matrix* m) {
     double out = 0.0;
 
     for (int i = 0; i < m->rows; i++) {
@@ -511,21 +529,21 @@ double infinity_norm(Matrix* m) {
     return out; 
 }
 
-double norm(Matrix* m, char* type) {
+double Norm(Matrix* m, char* type) {
     if ((strcmp(type, "frobenius") == 0) || (strcmp(type, "euclidean")) == 0) {
-        return frobenius_norm(m);
+        return FrobeniusNorm(m);
     } else if (strcmp(type, "l1") == 0) {
-        return l1_norm(m);
+        return L1Norm(m);
     } else if (strcmp(type, "infinity") == 0){
-        return infinity_norm(m);
+        return InfiniyNorm(m);
     } else {
         printf("Invalid type: enter 'frobenius', 'euclidean', 'l1', 'infinity'.");
         printf("frobenius Norm: ");
-        return frobenius_norm(m);
+        return FrobeniusNorm(m);
     }
 }
 
-Matrix* concat(Matrix* m, Matrix* n, int axis) {
+Matrix* MatrixConcat(Matrix* m, Matrix* n, int axis) {
     if (axis == 0) {
         assert(m->rows == n->rows);
         int new_cols = m->cols + n->cols;
@@ -561,12 +579,26 @@ Matrix* concat(Matrix* m, Matrix* n, int axis) {
 
     } else {
         printf("Invaid axis: Use `0` for row-wise concatenation and `1` for column-wise.");
-        return zeros(m->rows, m->cols);
+        return ZerosMatrix(m->rows, m->cols);
     }
 }
 
-Matrix* copy(Matrix* m) {
+Matrix* MatrixCopy(Matrix* m) {
     Matrix* out = InitMatrix(m->rows, m->cols);
     SetElements(out, m->data);
+    return out;
+}
+
+Matrix* MatrixNormalize(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+    double Norm = FrobeniusNorm(m);
+
+    if (Norm > 0.0) {
+        for (int i = 0; i < m->rows; i++) {
+            for (int j = 0; j < m->cols; j++) {
+                out->data[i * m->cols + j] = (m->data[i * m->cols + j] / Norm);
+            }
+        }
+    }
     return out;
 }

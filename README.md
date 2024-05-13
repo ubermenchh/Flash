@@ -4,29 +4,28 @@ my little linear algebra library
 ### Docs
 
 #### Vector Functions
-- `Vector* InitVector(size_t size);`
-- `void FreeVector(Vector* v);`
-- `void VectorSetElements(Vector* v, double* values);`
-- `void vector_set(Vector* v, size_t index, double value);`
-- `double vector_get(Vector* v, size_t index);`
-- `void PrintVector(Vector* v);`
-- `Vector* vector_add(Vector* v, Vector* w);`
-- `Vector* vector_sub(Vector* v, Vector* w);`
-- `Vector* vector_scale(Vector* v, int x);`
-- `double vector_norm(Vector* v);`
-- `double vector_dotproduct(Vector* v, Vector* w);`
-- `double vector_angle(Vector* v, Vector* w);`
-- `double vector_crossproduct(Vector* v, Vector* w);`
-- `bool vector_equal(Vector* v, Vector* w);`
-- `Vector* vector_normalize(Vector* v);`
-- `Vector* zeros_vector(size_t size);`
-- `Vector* ones_vector(size_t size);`
-- `Vector* random_vector(size_t size, int seed);`
-- `Vector* vector_copy(Vector* v);`
-- `Vector* vector_multiply(Vector* v, Vector* w);`
-- `double vector_projection(Vector* v, Vector* w);`
-
-- 
+- `Vector* InitVector(size_t size)`
+- `void FreeVector(Vector* v)`
+- `void VectorSetElements(Vector* v, double* values)`
+- `void VectorSet(Vector* v, size_t index, double value)`
+- `double VectorGet(Vector* v, size_t index)`
+- `void PrintVector(Vector* v)`
+- `Vector* VectorAdd(Vector* v, Vector* w)`
+- `Vector* VectorSub(Vector* v, Vector* w)`
+- `Vector* VectorScale(Vector* v, int x)`
+- `double VectorNorm(Vector* v)`
+- `double VectorDotProduct(Vector* v, Vector* w)`
+- `double VectorAngle(Vector* v, Vector* w)`
+- `double VectorCrossProduct(Vector* v, Vector* w)`
+- `bool VectorEqual(Vector* v, Vector* w)`
+- `Vector* VectorNormalize(Vector* v)`
+- `Vector* ZerosVector(size_t size)`
+- `Vector* OnesVector(size_t size)`
+- `Vector* RandomVector(size_t size, int seed)`
+- `Vector* VectorCopy(Vector* v)`
+- `Vector* VectorMultiply(Vector* v, Vector* w)`
+- `double VectorProjection(Vector* v, Vector* w)`
+- `Vector* VectorTransform(Vector* v, Matrix* m)`
 
 #### Matrix Functions
 - `Matrix* InitMatrix(int rows, int cols)`
@@ -34,23 +33,25 @@ my little linear algebra library
 - `void SetElements(Matrix* m, double* values)`
 - `void PrintMatrix(Matrix* m)`
 - `Matrix* RandMatrix(int rows, int cols, int seed)`
-- `Matrix* matadd(Matrix* m, Matrix* n)`
-- `Matrix* matsub(Matrix* m, Matrix* n)`
-- `Matrix* scalarmul(Matrix* m, int x)`
-- `Matrix* transpose(Matrix* m)`
-- `Matrix* ones(int rows, int cols)`
-- `Matrix* zeros(int rows, int cols)`
-- `Matrix* identity(int side)`
-- `Matrix* matmul(Matrix* m, Matrix* n)`
-- `Matrix* slice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols)`
-- `void LUDecomp(Matrix* A, Matrix** L, Matrix** U)`
-- `double determinant(Matrix* m)`
-- `double trace(Matrix* m)`
-- `double frobenius_norm(Matrix* m)`
-- `double l1_norm(Matrix* m)`
-- `double infinity_norm(Matrix* m)`
-- `double norm(Matrix* m, char* type)`
-- `Matrix* concat(Matrix* m, Matrix* n, int axis)`
+- `Matrix* MatrixAdd(Matrix* m, Matrix* n)`
+- `Matrix* MatrixSub(Matrix* m, Matrix* n)`
+- `Matrix* MatrixScale(Matrix* m, int x)`
+- `Matrix* MatrixTranspose(Matrix* m)`
+- `Matrix* OnesMatrix(int rows, int cols)`
+- `Matrix* ZerosMatrix(int rows, int cols)`
+- `Matrix* IdentityMatrix(int side)`
+- `Matrix* MatrixMul(Matrix* m, Matrix* n)`
+- `Matrix* MatrixSlice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols)`
+- `MatrixTuple LUDecomposition(Matrix* A, Matrix** L, Matrix** U)`
+- `double MatrixDeterminant(Matrix* m)`
+- `double MatrixTrace(Matrix* m)`
+- `double FrobeniusNorm(Matrix* m)`
+- `double L1Norm(Matrix* m)`
+- `double InfinityNorm(Matrix* m)`
+- `double MatrixNorm(Matrix* m, char* type)`
+- `Matrix* MatrixConcat(Matrix* m, Matrix* n, int axis)`
+- `Matrix* MatrixCopy(Matrix* m)`
+- `Matrix* MatrixNormalize(Matrix* m)`
 
 #### TODO: 
 - Matrix functions
