@@ -5,202 +5,193 @@
 ***************** HELPER FUNCTIONS ******************
 *****************************************************
 */
-float radian_to_degrees(float x) {
+double radian_to_degrees(double x) {
     /* Converts radian to degree */
-    return (x * 180) / M_PI;
+    return (x * 180) / (double)M_PI;
 }
 
 /*
 *****************************************************
-*************** 2D VECTOR FUNCTIONS *****************
+***************** VECTOR FUNCTIONS ******************
 *****************************************************
 */
-Vector2d Add2d(Vector2d v, Vector2d w) {
-    /* Adds two 2d vectors element-wise */ 
-    return (Vector2d){v.x + w.x, v.y + w.y};
+
+Vector* InitVector(size_t size) {
+    Vector* vector = (Vector*)malloc(sizeof(Vector));
+    vector->size = size;
+    vector->data = (double*)calloc(size, sizeof(double));
+    return vector;
 }
 
-Vector2d Subtract2d(Vector2d v, Vector2d w) {
-    /* Substracts two 2d vectors element-wise */
-    return (Vector2d){v.x - w.x, v.y - w.y};
+void FreeVector(Vector* v) {
+    free(v->data);
+    free(v);
 }
 
-Vector2d Scale2d(Vector2d v, int x) {
-    /* Multiplies an int to each component of a 2d vector */
-    return (Vector2d){v.x * x, v.y * x};
+void VectorSetElements(Vector* v, double* values) {
+    for (int i = 0; i < v->size; i++){
+        v->data[i] = values[i];
+    }
 }
 
-Vector2d DivideScalar2d(Vector2d v, int x) {
-    /* Divides each component of a 2d vector by an int */
-    return (Vector2d){v.x / x, v.y / x};
+void vector_set(Vector* v, size_t index, double value) {
+    if (index >= v->size) {
+        return;
+    }
+    v->data[index] = value;
 }
 
-void Print2d(Vector2d v) {
-    /* Prints a 2d vector: [x, y, x] */
-    printf("[%f %f]\n", v.x, v.y);
+double vector_get(Vector* v, size_t index) {
+    if (index >= v->size) {
+        return 0.0;
+    }
+    return v->data[index];
 }
 
-float Norm2d(Vector2d v) {
-    /* Calculates the magnitude of a 2d Vector */
-    return sqrt((v.x*v.x) + (v.y*v.y));
+void PrintVector(Vector* v) {
+    printf("Vector(data=([");
+    for (int i = 0; i < v->size; i++) {
+        printf(" %f", v->data[i]);
+    }
+    printf(" ]), size=%zu)\n", v->size);
 }
 
-float DotProduct2d(Vector2d v, Vector2d w) {
-    /* Dot Product between two 2d vectors */
-    return (v.x * w.x) + (v.y * w.y); 
+Vector* vector_add(Vector* v, Vector* w) {
+    assert(v->size == w->size);
+    Vector* out = InitVector(v->size);
+
+    for (int i = 0; i < out->size; i++) {
+        out->data[i] = (v->data[i] + w->data[i]);
+    }
+    return out;
 }
 
-float Angle2d(Vector2d v, Vector2d w) {
-    /* Calculates angle between two 2d vector */
-    float mag_v = Norm2d(v);
-    float mag_w = Norm2d(w);
-    float vdotw = DotProduct2d(v, w);
+Vector* vector_sub(Vector* v, Vector* w) {
+    assert(v->size == w->size);
+    Vector* out = InitVector(v->size);
 
-    float y = vdotw / (mag_v * mag_w);
-    return acos(y);
+    for (int i = 0; i < out->size; i++) {
+        out->data[i] = (v->data[i] - w->data[i]);
+    }
+    return out;
 }
 
-float CrossProduct2d(Vector2d v, Vector2d w) {
-    /* Calculates the cross product of two 2d vectors */
-    float mag_v = Norm2d(v);
-    float mag_w = Norm2d(w);
-    float angle = radian_to_degrees(Angle2d(v, w));
+Vector* vector_scale(Vector* v, int x) {
+    Vector* out = InitVector(v->size);
 
-    return (mag_v * mag_w) * sin(angle);
+    for (int i = 0; i < out->size; i++) {
+        out->data[i] = (v->data[i] * x);
+    }
+    return out;
 }
 
-bool Equal2d(Vector2d v, Vector2d w) {
-    /* Check whether two 2d vectors are equal */
-    return (v.x == w.x) && (v.y == w.y); 
+double vector_norm(Vector* v) {
+    double out = 0.0;
+    for (int i = 0; i < v->size; i++) {
+        out += (v->data[i] * v->data[i]);
+    }
+    return sqrt(out);
 }
 
-Vector2d Normalize2d(Vector2d v) {
-    /* Normalized a 2d Vector */
-    float norm_v = Norm2d(v);
-    return (Vector2d){v.x / norm_v, v.y / norm_v};
+double vector_dotproduct(Vector* v, Vector* w) {
+    assert(v->size == w->size);
+    double out = 0.0;
+
+    for (int i = 0; i < v->size; i++) {
+        out += (v->data[i] * w->data[i]);
+    }
+
+    return out;
 }
 
-Vector2d Zeros2d(void) {
-    /* Returns a 2d vector of 0s -> [0.0 0.0] */
-    return (Vector2d){0.0, 0.0};
+double vector_angle(Vector* v, Vector* w) {
+    double norm_v = vector_norm(v);
+    double norm_w = vector_norm(w);
+    double dot_p = vector_dotproduct(v, w);
+
+    double out = dot_p / (norm_v * norm_w);
+    return acos(out);
 }
 
-Vector2d Ones2d(void) {
-    /* Returns a 2d vector of 1s -> [1.0 1.0] */
-    return (Vector2d){1.0, 1.0};
+double vector_crossproduct(Vector* v, Vector* w) {
+    double norm_v = vector_norm(v);
+    double norm_w = vector_norm(w);
+    double angle = radian_to_degrees(vector_angle(v, w));
+
+    return (norm_v * norm_w) * sin(angle);
 }
 
-Vector2d Init2d(int seed) {
-    /* Initializes a 2d vector randomly */
+bool vector_equal(Vector* v, Vector* w) {
+    if (v->size != w->size) {
+        return false;
+    }
+    for (int i = 0; i < v->size; i++) {
+        if (v->data[i] != w->data[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+Vector* vector_normalize(Vector* v) {
+    float norm_v = vector_norm(v);
+    Vector* out = InitVector(v->size);
+
+    for (int i = 0; i < v->size; i++) {
+        out->data[i] = (v->data[i] / norm_v);
+    }
+    return out;
+}
+
+Vector* zeros_vector(size_t size) {
+    Vector* out = InitVector(size);
+    for (int i = 0; i < size; i++) {
+        out->data[i] = 0.0;
+    }
+    return out;
+}
+
+Vector* ones_vector(size_t size) {
+    Vector* out = InitVector(size);
+    for (int i = 0; i < size; i++) {
+        out->data[i] = 1.0;
+    }
+    return out;
+}
+
+Vector* random_vector(size_t size, int seed) {
     if (seed != 0) {
         srand(seed);
     } else {
         srand(time(NULL));
     }
-    return (Vector2d){(float)rand() / (float)RAND_MAX, (float)rand() / (float)RAND_MAX};
-}
-
-Vector2d Copy2d(Vector2d v) {
-    return (Vector2d){v.x, v.y};
-}
-
-Vector2d Multiply2d(Vector2d v, Vector2d w){
-    return (Vector2d){v.x * w.x, v.y * w.y};
-}
-
-float Projection2d(Vector2d v, Vector2d w) {
-    float vdotw = DotProduct2d(v, w);
-    float mag_w = Norm2d(w);
-    return vdotw / mag_w;
-}
-
-/*
-*************************************************
-************* 3D VECTOR FUNCTIONS ***************
-*************************************************
-*/
-Vector3d Add3d(Vector3d v, Vector3d w) {
-    return (Vector3d){v.x + w.x, v.y + w.y, v.z + w.z};
-}
-
-Vector3d Subtract3d(Vector3d v, Vector3d w) {
-    return (Vector3d){v.x - w.x, v.y - w.y, v.z + w.z};
-}
-
-Vector3d Scale3d(Vector3d v, int x) {
-    return (Vector3d){v.x * x, v.y * x, v.z * x};
-}
-
-Vector3d DivideScalar3d(Vector3d v, int x) {
-    return (Vector3d){v.x / x, v.y / x, v.z / x};
-}
-
-void Print3d(Vector3d v) {
-    printf("[%f %f %f]", v.x, v.y, v.z);
-}
-
-float Norm3d(Vector3d v) {
-    return sqrt((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
-}
-
-float DotProduct3d(Vector3d v, Vector3d w) {
-    return (v.x * w.x) + (v.y * w.y) + (v.z * w.z);
-}
-
-float Angle3d(Vector3d v, Vector3d w) {
-    float mag_v = Norm3d(v);
-    float mag_w = Norm3d(w);
-    float vdotw = DotProduct3d(v, w);
-
-    float y = vdotw / (mag_v * mag_w);
-    return acos(y);
-}
-
-float CrossProduct3d(Vector3d v, Vector3d w) {
-    float mag_v = Norm3d(v);
-    float mag_w = Norm3d(w);
-    float angle = radian_to_degrees(Angle3d(v, w));
-
-    return (mag_v * mag_w) * sin(angle);
-}
-
-bool Equal3d(Vector3d v, Vector3d w) {
-    return (v.x == w.x) && (v.y == w.y) && (v.z == w.z); 
-}
-
-Vector3d Normalize3d(Vector3d v) {
-    float norm_v = Norm3d(v);
-    return (Vector3d){v.x / norm_v, v.y / norm_v, v.z / norm_v};
-}
-
-Vector3d Zeros3d(void) {
-    return (Vector3d){0.0, 0.0, 0.0};
-}
-
-Vector3d Ones3d(void) {
-    return (Vector3d){1.0, 1.0, 1.0};
-}
-
-Vector3d Init3d(int seed) {
-    if (seed != 0) {
-        srand(seed);
-    } else {
-        srand(time(NULL));
+    Vector* out = InitVector(size);
+    for (int i = 0; i < size; i++) {
+        out->data[i] = (double)rand() / (double)RAND_MAX;
     }
-    return (Vector3d){(float)rand() / (float)RAND_MAX, (float)rand() / (float)RAND_MAX, (float)rand() / (float)RAND_MAX};
+    return out;
 }
 
-Vector3d Copy3d(Vector3d v) {
-    return (Vector3d){v.x, v.y, v.z};
+Vector* vector_copy(Vector* v) {
+    Vector* out = InitVector(v->size);
+    for (int i = 0; i < v->size; i++) {
+        out->data[i] = v->data[i];
+    }
+    return out;
 }
 
-Vector3d Multiply3d(Vector3d v, Vector3d w){
-    return (Vector3d){v.x * w.x, v.y * w.y, v.z * w.z};
+Vector* vector_multiply(Vector* v, Vector* w){
+    assert(v->size == w->size);
+    Vector* out = InitVector(v->size);
+    for (int i = 0; i < v->size; i++) {
+        out->data[i] = v->data[i] * w->data[i];
+    }
+    return out;
 }
 
-float Projection3d(Vector3d v, Vector3d w) {
-    float vdotw = DotProduct3d(v, w);
-    float mag_w = Norm3d(w);
+double vector_projection(Vector* v, Vector* w) {
+    double vdotw = vector_dotproduct(v, w);
+    double mag_w = vector_norm(w);
     return vdotw / mag_w;
 }
 
@@ -572,4 +563,10 @@ Matrix* concat(Matrix* m, Matrix* n, int axis) {
         printf("Invaid axis: Use `0` for row-wise concatenation and `1` for column-wise.");
         return zeros(m->rows, m->cols);
     }
+}
+
+Matrix* copy(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+    SetElements(out, m->data);
+    return out;
 }
