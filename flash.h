@@ -50,6 +50,7 @@ Vector* VectorCopy(Vector* v);
 Vector* VectorMultiply(Vector* v, Vector* w);
 double VectorProjection(Vector* v, Vector* w);
 Vector* VectorTransform(Vector* v, Matrix* m);
+Vector* VectorOrthog(Vector* v);
 
 
 Matrix* InitMatrix(int rows, int cols);
@@ -76,3 +77,10 @@ double MatrixNorm(Matrix* m, char* type);
 Matrix* MatrixConcat(Matrix* m, Matrix* n, int axis);
 Matrix* MatrixCopy(Matrix* m);
 Matrix* MatrixNormalize(Matrix* m);
+void swap_rows(Matrix* m, int row1, int row2);
+void mult_row(Matrix* m, int row1, double scalar);
+void add_row(Matrix* m, int row1, int row2, double scalar);
+int find_pivot(Matrix* m, int col, int row);
+Matrix* MatrixRowEchelon(Matrix* m);
+Matrix* MatrixInverse(Matrix* m);
+MatrixTuple QRDecomposition(Matrix* m);

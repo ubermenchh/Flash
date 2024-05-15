@@ -211,6 +211,30 @@ Vector* VectorTransform(Vector* v, Matrix* m) {
     }
     return out;
 }
+
+Vector* VectorOrthog(Vector* v) {
+    // TODO: This is not correct
+    size_t size = v->size;
+    Vector* out = InitVector(size);
+
+    size_t first_nonzero = 0;
+    while (first_nonzero < size && VectorGet(v, first_nonzero) == 0.0) {
+        first_nonzero++;
+    }
+    if (first_nonzero == size) {
+        VectorSet(out, 0, 1.0);
+        return out;
+    }
+
+    VectorSet(out, first_nonzero, 1.0);
+    double neg_first_nonzero = -VectorGet(v, first_nonzero);
+    for (size_t i = 0; i < size; i++) {
+        if (i != first_nonzero) {
+            VectorSet(out, i, neg_first_nonzero);
+        }
+    }
+    return out;
+}
 /*
 ******************************************
 *************** MATRICES *****************
@@ -601,4 +625,152 @@ Matrix* MatrixNormalize(Matrix* m) {
         }
     }
     return out;
+}
+
+void swap_rows(Matrix* m, int row1, int row2) {
+    if (row1 == row2) 
+        return;
+
+    for (int i = 0; i < m->cols; i++) {
+        double temp = m->data[row1 * m->cols + i];
+        m->data[row1 * m->cols + i] = m->data[row2 * m->cols + i];
+        m->data[row2 * m->cols + i] = temp;
+    }
+   }
+
+void mult_row(Matrix* m, int row, double x) {
+    for (int j = 0; j < m->cols; j++) {
+        m->data[row * m->cols + j] *= x;
+    }
+}
+
+void add_row(Matrix* m, int row1, int row2, double scalar) {
+    for (int j = 0; j < m->cols; j++) {
+        m->data[row1 * m->cols + j] += scalar * m->data[row2 * m->cols + j];
+    }
+}
+
+int find_pivot(Matrix* m, int col, int row) {
+    for (int i = row; i < m->rows; i++) {
+        if (fabs(m->data[i * m->cols + col]) > 1e-10) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+Matrix* MatrixRowEchelon(Matrix* m) {
+    Matrix* out = MatrixCopy(m);
+    int lead = 0;
+    int rows = out->rows;
+    int cols = out->cols;
+
+    while (lead < rows && lead < cols) {
+        int pivot = find_pivot(out, lead, lead);
+        if (pivot == -1) {
+            lead++;
+            continue;
+        }
+
+        swap_rows(out, lead, pivot);
+        mult_row(out, lead, 1.0 / out->data[lead * cols + lead]);
+
+        for (int i = 0; i < rows; i++) {
+            if (i != lead) {
+                add_row(out, i, lead, -out->data[i * cols + lead]);
+            }
+        }
+
+        lead++;
+    }
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            if (out->data[i * out->cols + j] == -0.0) {
+                out->data[i * out->cols + j] = 0.0;
+            }
+        }
+    }
+    return out;
+}
+
+
+Matrix* MatrixInverse(Matrix* m) {
+    assert(m->rows == m->cols);
+    assert(MatrixDeterminant(m) != 0.0);
+
+    int n = m->rows;
+    Matrix* eye = IdentityMatrix(n);
+    Matrix* aug = MatrixConcat(m, eye, 0);
+
+    Matrix* row_ech = MatrixRowEchelon(aug);
+
+    Matrix* inv = InitMatrix(n, n);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            inv->data[i * n + j] = row_ech->data[i * (2*n) + n + j];
+        } 
+    }
+    FreeMatrix(row_ech);
+    FreeMatrix(aug);
+    FreeMatrix(eye);
+    return inv;
+}
+
+void matrix_col_copy(Matrix* m, int col, Matrix* dst, int dst_col) {
+    for (int i = 0; i < m->rows; i++) {        
+        dst->data[i * dst->cols + dst_col] = m->data[i * m->cols + col];     
+    }
+}
+
+void matrix_col_subtract(Matrix* m, int col, Matrix* dst, int dst_col, double scalar) {
+    for (int i = 0; i < m->rows; i++) {
+        m->data[i * dst->cols + col] -= scalar * dst->data[i * m->cols + dst_col];
+    }
+}
+
+void matrix_col_divide(Matrix* m, int col, double scalar) {
+    for (int i = 0; i < m->rows; i++) {
+        m->data[i * m->cols + col] /= scalar;
+    }
+}
+
+double vector_length(Matrix* m, int col) {
+    double sum = 0.0;
+    for (int i = 0; i < m->rows; i++) {
+        sum += m->data[i * m->cols + col] * m->data[i * m->cols + col];
+    }
+    return sqrt(sum);
+}
+
+double vector_dot(Matrix* m, int col1, Matrix* n, int col2) {
+    double dot = 0;
+    for (int i = 0; i < m->rows; i++) {
+        dot += m->data[i * m->cols + col1] * n->data[i * n->cols + col2];
+    }
+    return dot;
+}
+
+MatrixTuple QRDecomposition(Matrix* m) {
+    assert(m->rows == m->cols);
+    assert(MatrixDeterminant(m) != 0.0);
+
+    Matrix* A = MatrixCopy(m);
+    Matrix* Q = ZerosMatrix(m->rows, m->cols);
+    Matrix* R = ZerosMatrix(m->rows, m->cols);
+  
+    
+    for (int i = 0; i < A->cols; i++) {
+        matrix_col_copy(A, i, Q, i);
+        for (int j = 0; j < i; j++) {
+            double r = vector_dot(Q, i, Q, j); 
+            R->data[j * A->cols + i] = r;
+            matrix_col_subtract(Q, i, Q, j, r);
+        }
+        double norm = vector_length(Q, i);
+        R->data[i * A->rows + i] = norm;
+        matrix_col_divide(Q, i, norm);
+    }
+    
+    FreeMatrix(A);
+    return (MatrixTuple){Q, R};
 }

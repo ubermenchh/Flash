@@ -42,7 +42,6 @@ my little linear algebra library
 - `Matrix* IdentityMatrix(int side)`
 - `Matrix* MatrixMul(Matrix* m, Matrix* n)`
 - `Matrix* MatrixSlice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols)`
-- `MatrixTuple LUDecomposition(Matrix* A, Matrix** L, Matrix** U)`
 - `double MatrixDeterminant(Matrix* m)`
 - `double MatrixTrace(Matrix* m)`
 - `double FrobeniusNorm(Matrix* m)`
@@ -52,6 +51,9 @@ my little linear algebra library
 - `Matrix* MatrixConcat(Matrix* m, Matrix* n, int axis)`
 - `Matrix* MatrixCopy(Matrix* m)`
 - `Matrix* MatrixNormalize(Matrix* m)`
+- `MatrixTuple LUDecomposition(Matrix* A)`
+- `Matrix* MatrixRowEchelon(Matrix* m)`
+- `Matrix* MatrixInverse(Matrix* m)`
 
 #### TODO: 
 - Matrix functions
@@ -60,7 +62,7 @@ my little linear algebra library
     - [x] scalar multiplication
     - [x] matrix multiplication
     - [x] transpose
-    - [ ] inverse
+    - [x] inverse
     - [x] determinant
     - [x] trace
     - [ ] rank 
