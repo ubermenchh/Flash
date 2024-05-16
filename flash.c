@@ -61,6 +61,22 @@ void PrintVector(Vector* v) {
     printf(" ]), size=%zu)\n\n", v->size);
 }
 
+char* PrintVectorToString(Vector* v) {
+    int len = snprintf(NULL, 0, "Vector(data=[");
+    for (int i = 0; i < v->size; i++) {
+        len += snprintf(NULL, 0, " %f", v->data[i]);
+    }
+    len += snprintf(NULL, 0, "]), size=%zu)\n\n", v->size);
+    
+    char* str = malloc(len + 1);
+    sprintf(str, "Vector(data=[");
+    for (int i = 0; i < v->size; i++) {
+        sprintf(str + strlen(str), " %f", v->data[i]);
+    }
+    sprintf(str + strlen(str), " ]), size=%zu)\n\n", v->size);
+    return str;
+}
+
 Vector* VectorAdd(Vector* v, Vector* w) {
     assert(v->size == w->size);
     Vector* out = InitVector(v->size);
@@ -773,4 +789,71 @@ MatrixTuple QRDecomposition(Matrix* m) {
     
     FreeMatrix(A);
     return (MatrixTuple){Q, R};
+}
+
+Matrix* QRAlgorithm(Matrix* m) {
+    Matrix* A = MatrixCopy(m);
+    int max_iters = 1e3;
+
+    for (int i = 0; i < max_iters; i++) {
+        MatrixTuple qr = QRDecomposition(A);
+        Matrix* Q = qr.first; Matrix* R = qr.second;
+
+        Matrix* AQ = MatrixMul(R, Q);
+        FreeMatrix(A);
+        A = AQ;
+
+        FreeMatrix(Q);
+        FreeMatrix(R);
+
+        int converged = 1;
+        for (int i = 0; i < A->rows; i++) {
+            for (int j = 0; j < i; j++) {
+                if (fabs(A->data[i * A->cols + j]) > 1e-10) {
+                    converged = 0;
+                    break;
+                }
+            }
+            if (!converged)
+                break;
+        }
+
+        if (converged)
+            break;
+    }
+    return A;
+}
+
+int non_zero_rows(Matrix* m) {
+    int count = 0;
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            if (m->data[i * m->cols + j] == 0) {
+                continue;
+            } else if (m->data[i * m->cols + j] != 0 && (i * m->cols + j + 1) % m->cols == 0) {
+                count++;
+            }
+        }
+    }
+    return count;
+}
+
+
+int MatrixRank(Matrix* m) {
+    Matrix* rem;
+    int non_zero_row_count = 0;
+
+    if (m->rows == m->cols && MatrixDeterminant(m) != 0) {
+        return m->rows;
+    } else if (m->rows == m->cols && MatrixDeterminant(m) == 0) {
+        rem = MatrixRowEchelon(m);
+        non_zero_row_count = non_zero_rows(rem);
+        FreeMatrix(rem);
+        }
+    else {
+        rem = MatrixRowEchelon(m);
+        non_zero_row_count = non_zero_rows(rem);
+        FreeMatrix(rem);
+    }
+    return non_zero_row_count;
 }

@@ -58,14 +58,14 @@ my little linear algebra library
 #### TODO: 
 - Matrix functions
     - [x] addition
-    - [x] substract
+    - [x] subtract
     - [x] scalar multiplication
     - [x] matrix multiplication
     - [x] transpose
     - [x] inverse
     - [x] determinant
     - [x] trace
-    - [ ] rank 
+    - [x] rank 
     - [ ] norm (frobenius, l1, l2, infinity)
     - [ ] factorization (LU, QR, Cholesky, SVD)
     - [ ] Eigenvectors and Eigenvalues 
