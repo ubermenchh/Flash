@@ -25,6 +25,12 @@ typedef struct {
     Matrix* second;
 } MatrixTuple;
 
+typedef struct {
+    Matrix* first;
+    Matrix* second;
+    Matrix* third;
+} Matrix3Tuple;
+
 double radian_to_degrees(double x);
 void FreeMatrixTuple(MatrixTuple mt);
 
@@ -52,7 +58,8 @@ Vector* VectorMultiply(Vector* v, Vector* w);
 double VectorProjection(Vector* v, Vector* w);
 Vector* VectorTransform(Vector* v, Matrix* m);
 Vector* VectorOrthog(Vector* v);
-
+double VectorSum(Vector* v);
+Vector* VectorExp(Vector* v);
 
 Matrix* InitMatrix(int rows, int cols);
 void FreeMatrix(Matrix* m);
@@ -88,3 +95,13 @@ MatrixTuple QRDecomposition(Matrix* m);
 Matrix* QRAlgorithm(Matrix* m);
 int non_zero_rows(Matrix* m);
 int MatrixRank(Matrix* m);
+Vector* MatrixDiagonal(Matrix* m);
+Matrix* MatrixTril(Matrix* m);
+double MatrixMax(Matrix* mm);
+double MatrixMin(Matrix* m);
+double MatrixMean(Matrix* m);
+double MatrixStd(Matrix* m);
+Matrix* MatrixMaxVals(Matrix* m, int dim);
+Matrix* MatrixMinVals(Matrix* m, int dim);
+Matrix* MatrixMeanVals(Matrix* m, int dim);
+Matrix* MatrixStdVals(Matrix* m, int dim);

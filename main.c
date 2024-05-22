@@ -3,18 +3,15 @@
 #include "flash.h"
 
 int main(void) {
-    Matrix* m = InitMatrix(3, 3);
-    double m_values[] = {8, -2, 5, 3, 0, 1, 3, 5, 6};
+    Matrix* m = InitMatrix(3, 4);
+    double m_values[] = {8, -2, 5, 3, 0, 1, 3, 5, 6, -2, 3, 1};
     SetElements(m, m_values);
-    Matrix* x = InitMatrix(3, 3);
-    double x_values[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
-    SetElements(x, x_values);
+    Matrix* m_max = MatrixStdVals(m, 1);
 
     PrintMatrix(m);
-    printf("Rank of m: %d\n", MatrixRank(m));
-    PrintMatrix(x);
-    printf("Rank of x: %d\n", MatrixRank(x));
+    printf("Max: %f | Min: %f | Mean: %f | Std: %f |\n", MatrixMax(m), MatrixMin(m), MatrixMean(m), MatrixStd(m));
+    PrintMatrix(m_max);
 
     FreeMatrix(m);
-    FreeMatrix(x);
+    FreeMatrix(m_max);
 }

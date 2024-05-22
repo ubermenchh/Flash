@@ -73,7 +73,7 @@ char* PrintVectorToString(Vector* v) {
     for (int i = 0; i < v->size; i++) {
         sprintf(str + strlen(str), " %f", v->data[i]);
     }
-    sprintf(str + strlen(str), " ]), size=%zu)\n\n", v->size);
+    sprintf(str + strlen(str), " ]), size=(%zu,))\n\n", v->size);
     return str;
 }
 
@@ -251,6 +251,23 @@ Vector* VectorOrthog(Vector* v) {
     }
     return out;
 }
+
+double VectorSum(Vector* v) {
+    double sum = 0.0;
+    for (int i = 0; i < v->size; i++) {
+        sum += v->data[i];
+    }
+    return sum;
+}
+
+Vector* VectorExp(Vector* v) {
+    Vector* out = VectorCopy(v);
+    for (int i = 0; i < v->size; i++) {
+        out->data[i] = exp(v->data[i]);
+    }
+    return out;
+}
+
 /*
 ******************************************
 *************** MATRICES *****************
@@ -324,7 +341,7 @@ void PrintMatrix(Matrix* m) {
         }
     }
     printf("]\n");
-    printf("], size=%dx%d)\n\n", m->rows, m->cols);
+    printf("], size=(%d, %d))\n\n", m->rows, m->cols);
 }
 
 Matrix* RandMatrix(int rows, int cols, int seed) {
@@ -397,7 +414,7 @@ Matrix* ZerosMatrix(int rows, int cols) {
     return out;
 }
 
-Matrix* OnesMatrixsMatrix(int rows, int cols) {
+Matrix* OnesMatrix(int rows, int cols) {
     Matrix* out = InitMatrix(rows, cols);
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
@@ -856,4 +873,225 @@ int MatrixRank(Matrix* m) {
         FreeMatrix(rem);
     }
     return non_zero_row_count;
+}
+
+void householder_left(Matrix* A, int k, double* tau) {
+    int m = A->rows, n = A->cols;
+    double alpha = 0.0;
+
+    for (int i = k; i < m; i++) {
+        alpha += A->data[i * n + k] * A->data[i * n + k];
+    }
+    alpha = sqrt(alpha);
+
+    int beta = 0.0;
+    for (int i = k; i < k; i++) {
+        beta += A->data[i * n + k] * A->data[i * n + k];
+    }
+    beta = sqrt(alpha);
+
+}
+
+Matrix3Tuple SVD(Matrix* m) {
+    Matrix* U = InitMatrix(m->rows, m->cols);
+    Matrix* S = InitMatrix(m->rows, m->cols);
+    Matrix* V = InitMatrix(m->rows, m->cols);
+
+
+    return (Matrix3Tuple){U, S, V};
+}
+
+Vector* MatrixDiagonal(Matrix* m) {
+    assert(m->rows == m->cols);
+    Vector* out = InitVector(m->rows);
+    
+    for (int i = 0, j = 0; i < m->rows*m->cols && j < out->size; i += m->rows+1, j++) {
+        out->data[j] = m->data[i];
+    }
+    return out;
+}
+
+Matrix* MatrixTril(Matrix* m) {
+    assert(m->rows == m->cols);
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            if (j <= i) {
+                out->data[i * out->cols + j] = m->data[i * m->cols + j];
+            } else {
+                out->data[i * out->cols + j] = 0.0;
+            }
+        }
+    }
+    return out;
+}
+
+double MatrixMax(Matrix* m) {
+    double max_val = -INFINITY;
+    
+    for (int i = 0; i < m->rows*m->cols; i++) {
+        if (m->data[i] > max_val) {
+            max_val = m->data[i];
+        }
+    }
+    return max_val;
+}
+
+double MatrixMin(Matrix* m) {
+    double min_val = INFINITY;
+    
+    for (int i = 0; i < m->rows*m->cols; i++) {
+        if (m->data[i] < min_val) {
+            min_val = m->data[i];
+        }
+    }
+    return min_val;
+}
+
+double MatrixMean(Matrix* m) {
+    double out = 0.0;
+    int num_el = m->rows * m->cols;
+
+    for (int i = 0; i < num_el; i++) {
+        out += m->data[i];
+    }
+    return out / num_el;
+}
+
+double MatrixStd(Matrix* m) {
+    double mean = MatrixMean(m);
+    int num_el = m->rows * m->cols;
+    double out = 0.0;
+
+    for (int i = 0; i < num_el; i++) {
+        out += (m->data[i] - mean)*(m->data[i] - mean);
+    }
+    return sqrt(out / num_el);
+}
+
+Matrix* MatrixMaxVals(Matrix* m, int dim) {
+    double max_val = -INFINITY;
+
+    if (dim == 0) {
+        Matrix* out_m = InitMatrix(m->rows, 1);
+        for (int i = 0; i < m->rows; i++) {
+            for (int j = 0; j < m->cols; j++) {
+                if (m->data[i * m->rows + j] > max_val) {
+                    max_val = m->data[i * m->rows + j];
+                }
+            }
+            out_m->data[i] = max_val;
+            max_val = -INFINITY;
+        }
+        return out_m;
+    } else if (dim == 1) {
+        Matrix* out_m = InitMatrix(1, m->cols);
+        for (int j = 0; j < m->cols; j++) {
+            for (int i = 0; i < m->rows; i++) {
+                if (m->data[i * m->cols + j] > max_val) {
+                    max_val = m->data[i * m->cols + j];
+                }
+            }
+            out_m->data[j] = max_val;
+            max_val = -INFINITY;
+        }
+        return out_m;
+    } else {
+        return NULL;
+    }
+}
+
+Matrix* MatrixMinVals(Matrix* m, int dim) {
+    double min_val = INFINITY;
+
+    if (dim == 0) {
+        Matrix* out_m = InitMatrix(m->rows, 1);
+        for (int i = 0; i < m->rows; i++) {
+            for (int j = 0; j < m->cols; j++) {
+                if (m->data[i * m->rows + j] < min_val) {
+                    min_val = m->data[i * m->rows + j];
+                }
+            }
+            out_m->data[i] = min_val;
+            min_val = INFINITY;
+        }
+        return out_m;
+    } else if (dim == 1) {
+        Matrix* out_m = InitMatrix(1, m->cols);
+        for (int j = 0; j < m->cols; j++) {
+            for (int i = 0; i < m->rows; i++) {
+                if (m->data[i * m->cols + j] < min_val) {
+                    min_val = m->data[i * m->cols + j];
+                }
+            }
+            out_m->data[j] = min_val;
+            min_val = INFINITY;
+        }
+        return out_m;
+    } else {
+        return NULL;
+    }
+}
+
+Matrix* MatrixMeanVals(Matrix* m, int dim) {
+    int row_elem = m->cols;
+    int col_elem = m->rows;
+
+    if (dim == 0) {
+        double row_sum = 0.0;
+        Matrix* out_m = InitMatrix(m->rows, 1);
+        for (int i = 0; i < m->rows; i++) {
+            for (int j = 0; j < m->cols; j++) {
+                row_sum += m->data[i * m->cols + j];
+            }
+            out_m->data[i] = row_sum / row_elem;
+            row_sum = 0.0;
+        }
+        return out_m;
+    } else if (dim == 1) {
+        double col_sum = 0.0;
+        Matrix* out_m = InitMatrix(1, m->cols);
+        for (int j = 0; j < m->cols; j++) {
+            for (int i = 0; i < m->rows; i++) {
+                col_sum += m->data[i * m->cols + j];
+            }
+            out_m->data[j] = col_sum / col_elem;
+            col_sum = 0.0;
+        }
+        return out_m;
+    } else {
+        return NULL;
+    }
+}
+
+Matrix* MatrixStdVals(Matrix* m, int dim) {
+    int row_elem = m->cols;
+    int col_elem = m->rows;
+
+    if (dim == 0) {
+        double row_sum = 0.0;
+        Matrix* out_m = InitMatrix(m->rows, 1);
+        for (int i = 0; i < m->rows; i++) {
+            for (int j = 0; j < m->cols; j++) {
+                row_sum += m->data[i * m->cols + j] * m->data[i * m->cols + j];
+            }
+            out_m->data[i] = sqrt(row_sum / row_elem);
+            row_sum = 0.0;
+        }
+        return out_m;
+    } else if (dim == 1) {
+        double col_sum = 0.0;
+        Matrix* out_m = InitMatrix(1, m->cols);
+        for (int j = 0; j < m->cols; j++) {
+            for (int i = 0; i < m->rows; i++) {
+                col_sum += m->data[i * m->cols + j] * m->data[i * m->cols + j];
+            }
+            out_m->data[j] = sqrt(col_sum / col_elem);
+            col_sum = 0.0;
+        }
+        return out_m;
+    } else {
+        return NULL;
+    }
 }
