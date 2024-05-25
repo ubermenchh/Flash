@@ -324,7 +324,7 @@ void PrintMatrix(Matrix* m) {
         max_digits = (int)log10(max_val) + 1 + 8;
     }
 
-    printf("Matrix(data=[\n[");
+    printf("Matrix(data=(\n[");
     for (int i = 0; i < m->rows; i++) {
         if (i == 0) {
             printf("[");
@@ -341,7 +341,7 @@ void PrintMatrix(Matrix* m) {
         }
     }
     printf("]\n");
-    printf("], size=(%d, %d))\n\n", m->rows, m->cols);
+    printf("), size=(%d, %d))\n\n", m->rows, m->cols);
 }
 
 Matrix* RandMatrix(int rows, int cols, int seed) {
@@ -809,36 +809,29 @@ MatrixTuple QRDecomposition(Matrix* m) {
 }
 
 Matrix* QRAlgorithm(Matrix* m) {
-    Matrix* A = MatrixCopy(m);
-    int max_iters = 1e3;
+    MatrixTuple QR; Matrix* Q;
+    int MAX_ITER = 500;
+    Q = MatrixCopy(m);
 
-    for (int i = 0; i < max_iters; i++) {
-        MatrixTuple qr = QRDecomposition(A);
-        Matrix* Q = qr.first; Matrix* R = qr.second;
+    for (int i = 0; i < MAX_ITER; i++) {
+        QR = QRDecomposition(Q);
+        Q = MatrixMul(QR.second, QR.first);
 
-        Matrix* AQ = MatrixMul(R, Q);
-        FreeMatrix(A);
-        A = AQ;
-
-        FreeMatrix(Q);
-        FreeMatrix(R);
-
-        int converged = 1;
-        for (int i = 0; i < A->rows; i++) {
-            for (int j = 0; j < i; j++) {
-                if (fabs(A->data[i * A->cols + j]) > 1e-10) {
-                    converged = 0;
-                    break;
-                }
-            }
-            if (!converged)
-                break;
-        }
-
-        if (converged)
+        if (MatrixMax(MatrixAbs(MatrixTril(Q, -1))) < 1e-10) {
             break;
+        }
     }
-    return A;
+    return Q;
+}
+
+Vector* MatrixEig(Matrix* m) {
+    Vector* out = InitVector(m->rows);
+    Matrix* Q = QRAlgorithm(m);
+
+    for (int i = 0; i < out->size; i++) {
+        out->data[i] = Q->data[i * out->size + i];
+    }
+    return out;
 }
 
 int non_zero_rows(Matrix* m) {
@@ -911,13 +904,13 @@ Vector* MatrixDiagonal(Matrix* m) {
     return out;
 }
 
-Matrix* MatrixTril(Matrix* m) {
+Matrix* MatrixTril(Matrix* m, int diag) {
     assert(m->rows == m->cols);
     Matrix* out = InitMatrix(m->rows, m->cols);
 
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
-            if (j <= i) {
+            if (j <= i - diag) {
                 out->data[i * out->cols + j] = m->data[i * m->cols + j];
             } else {
                 out->data[i * out->cols + j] = 0.0;
@@ -927,6 +920,21 @@ Matrix* MatrixTril(Matrix* m) {
     return out;
 }
 
+Matrix* MatrixTriu(Matrix* m, int diag) {
+    assert(m->rows == m->cols);
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            if (j >= i + diag) {
+                out->data[i * out->cols + j] = m->data[i * m->cols + j];
+            } else {
+                out->data[i * out->cols + j] = 0.0;
+            }
+        }
+    }
+    return out;
+}
 double MatrixMax(Matrix* m) {
     double max_val = -INFINITY;
     
@@ -1094,4 +1102,48 @@ Matrix* MatrixStdVals(Matrix* m, int dim) {
     } else {
         return NULL;
     }
+}
+
+bool MatrixAllClose(Matrix* m, Matrix* n, double tol) {
+    if (m->rows != n->rows || m->cols != n->cols) {
+        return false;
+    }
+    
+    /*
+    double atol = 1e-08;
+    double rtol = 1e-05;
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            if (fabs(m->data[i * m->cols + j] - n->data[i * n->cols + j]) > (atol + rtol * fabs(n->data[i * n->cols + j]))) {
+                return false;
+            }
+        }
+    }
+    */ 
+    
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            if (fabs(m->data[i * m->cols + j] - n->data[i * n->cols + j]) > tol) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+Matrix* MatrixSolve(Matrix* m, Matrix* n) {
+    Matrix* m_inv = MatrixInverse(m);
+    return MatrixMul(MatrixTranspose(n), m_inv);
+}
+
+Matrix* MatrixAbs(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+    
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            out->data[i * out->cols + j] = fabs(m->data[i * out->cols + j]);
+        }
+    }
+    return out;
 }
