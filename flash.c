@@ -914,7 +914,7 @@ SVDStruct SVD(Matrix* m) {
         }
     }
     Vector* Sigma = MatrixDiagonal(S, 0);
-    return (SVDStruct){U, Sigma, V};
+    return (SVDStruct){U, Sigma, MatrixTranspose(V)};
 }
 
 Vector* MatrixDiagonal(Matrix* m, int k) {
@@ -1179,4 +1179,104 @@ Matrix* CholeskyDecomposition(Matrix* m) {
         }
     }
     return L;
+}
+
+Matrix* MatrixEigVec(Matrix* m) {
+    Matrix* eig = InitMatrix(m->rows, m->cols);
+    Vector* eigenvalues = MatrixEig(m);
+    Matrix* A; SVDStruct svd;
+    Matrix* eigenvector;
+
+    for (int i = 0; i < eigenvalues->size; i++) {
+        A = MatrixSub(m, MatrixScalarMul(IdentityMatrix(m->rows), eigenvalues->data[i]));
+        svd = SVD(A);
+        eigenvector = MatrixSlice(svd.V, 2, m->rows, 0, 3);
+
+        double norm = FrobeniusNorm(eigenvector);
+        for (int j = 0; j < m->rows; j++) {
+            eig->data[j * m->cols + i] = eigenvector->data[j] / norm;
+        }
+    }
+    return eig;
+}
+
+Matrix* ToMatrix(Vector* v) {
+    Matrix* out = InitMatrix(1, v->size);
+
+    for (int i = 0; i < v->size; i++) {
+        out->data[i] = v->data[i];
+    }
+    return out;
+}
+
+Matrix* MatrixVectorMul(Matrix* m, Vector* v) {
+    assert(m->cols == v->size);
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            out->data[i * out->cols + j] = m->data[i * m->cols + j] * v->data[j];
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixScalarAdd(Matrix* m, double x) {
+    Matrix* out = MatrixCopy(m);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            out->data[i * out->cols + j] += x;
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixScalarSub(Matrix* m, double x) {
+    Matrix* out = MatrixCopy(m);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            out->data[i * out->cols + j] -= x;
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixScalarMul(Matrix* m, double x) {
+    Matrix* out = MatrixCopy(m);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            out->data[i * out->cols + j] *= x;
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixScalarDiv(Matrix* m, double x) {
+    Matrix* out = MatrixCopy(m);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            out->data[i * out->cols + j] /= x;
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixMultiply(Matrix* m, Matrix* n) {
+    assert(m->rows == n->rows && m->cols == n->cols);
+    Matrix* out = MatrixCopy(m);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            out->data[i * out->cols + j] *= n->data[i * n->cols + j];
+        }
+    }
+    return out;
+}
+
+double MatrixLogDeterminant(Matrix* m) {
+    return log(MatrixDeterminant(m));
 }
