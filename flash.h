@@ -26,13 +26,14 @@ typedef struct {
 } MatrixTuple;
 
 typedef struct {
-    Matrix* first;
-    Matrix* second;
-    Matrix* third;
-} Matrix3Tuple;
+    Matrix* U;
+    Vector* S;
+    Matrix* V;
+} SVDStruct;
 
 double radian_to_degrees(double x);
 void FreeMatrixTuple(MatrixTuple mt);
+void FreeSVDStruct(SVDStruct svd);
 
 Vector* InitVector(size_t size);
 void FreeVector(Vector* v);
@@ -60,6 +61,7 @@ Vector* VectorTransform(Vector* v, Matrix* m);
 Vector* VectorOrthog(Vector* v);
 double VectorSum(Vector* v);
 Vector* VectorExp(Vector* v);
+bool VectorAllClose(Vector* v, Vector* w);
 
 Matrix* InitMatrix(int rows, int cols);
 void FreeMatrix(Matrix* m);
@@ -72,7 +74,7 @@ Matrix* MatrixScale(Matrix* m, int x);
 Matrix* MatrixTranspose(Matrix* m);
 Matrix* OnesMatrix(int rows, int cols);
 Matrix* ZerosMatrix(int rows, int cols);
-Matrix* IdentityMatriz(int side);
+Matrix* IdentityMatrix(int side);
 Matrix* MatrixMul(Matrix* m, Matrix* n);
 Matrix* MatrixSlice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols);
 MatrixTuple LUDecomposition(Matrix* A);
@@ -96,7 +98,7 @@ Matrix* QRAlgorithm(Matrix* m);
 Vector* MatrixEig(Matrix* m);
 int non_zero_rows(Matrix* m);
 int MatrixRank(Matrix* m);
-Vector* MatrixDiagonal(Matrix* m);
+Vector* MatrixDiagonal(Matrix* m, int k);
 Matrix* MatrixTril(Matrix* m, int diag);
 Matrix* MatrixTriu(Matrix* m, int diag);
 double MatrixMax(Matrix* mm);
@@ -107,6 +109,8 @@ Matrix* MatrixMaxVals(Matrix* m, int dim);
 Matrix* MatrixMinVals(Matrix* m, int dim);
 Matrix* MatrixMeanVals(Matrix* m, int dim);
 Matrix* MatrixStdVals(Matrix* m, int dim);
-bool MatrixAllClose(Matrix* m, Matrix* n, double tol);
+bool MatrixAllClose(Matrix* m, Matrix* n);
 Matrix* MatrixSolve(Matrix* m, Matrix* n);
 Matrix* MatrixAbs(Matrix* m);
+Matrix* CholeskyDecomposition(Matrix* m);
+SVDStruct SVD(Matrix* m);

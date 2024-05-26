@@ -15,6 +15,12 @@ void FreeMatrixTuple(MatrixTuple mt) {
     FreeMatrix(mt.second);
 }
 
+void FreeSVDStruct(SVDStruct svd) {
+    FreeMatrix(svd.U);
+    FreeVector(svd.S);
+    FreeMatrix(svd.V);
+}
+
 /*
 *****************************************************
 ***************** VECTOR FUNCTIONS ******************
@@ -164,7 +170,7 @@ Vector* VectorNormalize(Vector* v) {
     return out;
 }
 
-Vector* ZerosMatrixVector(size_t size) {
+Vector* ZerosVector(size_t size) {
     Vector* out = InitVector(size);
     for (int i = 0; i < size; i++) {
         out->data[i] = 0.0;
@@ -172,7 +178,7 @@ Vector* ZerosMatrixVector(size_t size) {
     return out;
 }
 
-Vector* OnessMatrixsMatrixVector(size_t size) {
+Vector* OnesVector(size_t size) {
     Vector* out = InitVector(size);
     for (int i = 0; i < size; i++) {
         out->data[i] = 1.0;
@@ -218,7 +224,7 @@ double VectorProjection(Vector* v, Vector* w) {
 
 Vector* VectorTransform(Vector* v, Matrix* m) {
     assert(m->cols == v->size);
-    Vector* out = ZerosMatrixVector(m->rows);
+    Vector* out = ZerosVector(m->rows);
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
@@ -267,6 +273,24 @@ Vector* VectorExp(Vector* v) {
     }
     return out;
 }
+
+bool VectorAllClose(Vector* v, Vector* w) {
+    if (v->size != w->size) {
+        return false;
+    }
+    
+    double atol = 1e-08;
+    double rtol = 1e-05;
+
+    for (int i = 0; i < v->size; i++) {
+        if (fabs(v->data[i] - w->data[i]) > (atol + rtol * fabs(w->data[i]))) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
 
 /*
 ******************************************
@@ -868,38 +892,37 @@ int MatrixRank(Matrix* m) {
     return non_zero_row_count;
 }
 
-void householder_left(Matrix* A, int k, double* tau) {
-    int m = A->rows, n = A->cols;
-    double alpha = 0.0;
+SVDStruct SVD(Matrix* m) {
+    int x = m->rows, y = m->cols;
+    Matrix* U = IdentityMatrix(x);
+    Matrix* V = IdentityMatrix(y);
+    Matrix* S = MatrixCopy(m);
+    int MAX_ITERS = 100;
+    MatrixTuple US, SV;
 
-    for (int i = k; i < m; i++) {
-        alpha += A->data[i * n + k] * A->data[i * n + k];
+    for (int i = 0; i < MAX_ITERS; i++) {
+        US = QRDecomposition(S);
+        S = US.second;
+        U = MatrixMul(U, US.first);
+
+        SV = QRDecomposition(MatrixTranspose(S));
+        S = MatrixTranspose(SV.second);
+        V = MatrixMul(V, SV.first);
+
+        if (VectorAllClose(MatrixDiagonal(S, 0), ZerosVector(S->rows))) {
+            break;
+        }
     }
-    alpha = sqrt(alpha);
-
-    int beta = 0.0;
-    for (int i = k; i < k; i++) {
-        beta += A->data[i * n + k] * A->data[i * n + k];
-    }
-    beta = sqrt(alpha);
-
+    Vector* Sigma = MatrixDiagonal(S, 0);
+    return (SVDStruct){U, Sigma, V};
 }
 
-Matrix3Tuple SVD(Matrix* m) {
-    Matrix* U = InitMatrix(m->rows, m->cols);
-    Matrix* S = InitMatrix(m->rows, m->cols);
-    Matrix* V = InitMatrix(m->rows, m->cols);
-
-
-    return (Matrix3Tuple){U, S, V};
-}
-
-Vector* MatrixDiagonal(Matrix* m) {
+Vector* MatrixDiagonal(Matrix* m, int k) {
     assert(m->rows == m->cols);
-    Vector* out = InitVector(m->rows);
-    
-    for (int i = 0, j = 0; i < m->rows*m->cols && j < out->size; i += m->rows+1, j++) {
-        out->data[j] = m->data[i];
+    Vector* out = InitVector(m->rows - abs(k));
+    int start = (k >= 0) ? 0 : -k;
+    for (int i = start, j = 0; i < m->rows - abs(k) && j < out->size; i++, j++) {
+        out->data[j] = m->data[i * m->rows + i + k];
     }
     return out;
 }
@@ -1104,27 +1127,17 @@ Matrix* MatrixStdVals(Matrix* m, int dim) {
     }
 }
 
-bool MatrixAllClose(Matrix* m, Matrix* n, double tol) {
+bool MatrixAllClose(Matrix* m, Matrix* n) {
     if (m->rows != n->rows || m->cols != n->cols) {
         return false;
     }
     
-    /*
     double atol = 1e-08;
     double rtol = 1e-05;
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
             if (fabs(m->data[i * m->cols + j] - n->data[i * n->cols + j]) > (atol + rtol * fabs(n->data[i * n->cols + j]))) {
-                return false;
-            }
-        }
-    }
-    */ 
-    
-    for (int i = 0; i < m->rows; i++) {
-        for (int j = 0; j < m->cols; j++) {
-            if (fabs(m->data[i * m->cols + j] - n->data[i * n->cols + j]) > tol) {
                 return false;
             }
         }
@@ -1146,4 +1159,24 @@ Matrix* MatrixAbs(Matrix* m) {
         }
     }
     return out;
+}
+
+Matrix* CholeskyDecomposition(Matrix* m) {
+    assert(MatrixAllClose(m, MatrixTranspose(m)));
+    Matrix* L = ZerosMatrix(m->rows, m->cols);
+    
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j <= i; j++) {
+            double sum_val = 0.0;
+            for (int k = 0; k < j; k++) {
+                sum_val += L->data[i * L->cols + k] * L->data[j * L->cols + k];
+            }
+            if (i == j) {
+                L->data[i * L->cols + j] = sqrt(m->data[i * m->cols + j] - sum_val);
+            } else {
+                L->data[i * L->cols + j] = (1.0 / L->data[j * L->cols + j]) * (m->data[i * m->cols + j] - sum_val); 
+            }
+        }
+    }
+    return L;
 }

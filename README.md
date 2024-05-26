@@ -29,6 +29,7 @@ my little linear algebra library
 - `Vector* VectorOrthog(Vector* v)`
 - `double VectorSum(Vector* v)`
 - `Vector* VectorExp(Vector* v)`
+- `bool VectorAllClose(Vector* v, Vector* w)`
 
 #### Matrix Functions
 - `Matrix* InitMatrix(int rows, int cols)`
@@ -42,7 +43,7 @@ my little linear algebra library
 - `Matrix* MatrixTranspose(Matrix* m)`
 - `Matrix* OnesMatrix(int rows, int cols)`
 - `Matrix* ZerosMatrix(int rows, int cols)`
-- `Matrix* IdentityMatriz(int side)`
+- `Matrix* IdentityMatrix(int side)`
 - `Matrix* MatrixMul(Matrix* m, Matrix* n)`
 - `Matrix* MatrixSlice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols)`
 - `MatrixTuple LUDecomposition(Matrix* A)`
@@ -66,7 +67,7 @@ my little linear algebra library
 - `Vector* MatrixEig(Matrix* m)`
 - `int non_zero_rows(Matrix* m)`
 - `int MatrixRank(Matrix* m)`
-- `Vector* MatrixDiagonal(Matrix* m)`
+- `Vector* MatrixDiagonal(Matrix* m, int k)`
 - `Matrix* MatrixTril(Matrix* m, int diag)`
 - `Matrix* MatrixTriu(Matrix* m, int diag)`
 - `double MatrixMax(Matrix* mm)`
@@ -77,11 +78,13 @@ my little linear algebra library
 - `Matrix* MatrixMinVals(Matrix* m, int dim)`
 - `Matrix* MatrixMeanVals(Matrix* m, int dim)`
 - `Matrix* MatrixStdVals(Matrix* m, int dim)`
-- `bool MatrixAllClose(Matrix* m, Matrix* n, double tol)`
+- `bool MatrixAllClose(Matrix* m, Matrix* n)`
 - `Matrix* MatrixSolve(Matrix* m, Matrix* n)`
 - `Matrix* MatrixAbs(Matrix* m)` 
+- `Matrix* CholeskyDecomposition(Matrix* m)`
+- `SVDStruct SVD(Matrix* m)`
 
 #### TODO
 - Matrix functions
     - [ ] norm (l2)
-    - [ ] factorization (Cholesky, SVD)
+    - [ ] eigenvectors

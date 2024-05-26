@@ -6,12 +6,14 @@ int main(void) {
     Matrix* m = InitMatrix(3, 3);
     double m_values[] = {10, -45, 92, -91, 21, 4, 23, 0, -81};
     SetElements(m, m_values);
-    Vector* m_eig = MatrixEig(m);
+    SVDStruct svd = SVD(m);
 
     PrintMatrix(m);
-    PrintVector(m_eig);
+    PrintMatrix(svd.U);
+    PrintVector(svd.S);
+    PrintMatrix(svd.V);
 
     FreeMatrix(m);
-    FreeVector(m_eig);
+    FreeSVDStruct(svd);
 }
 
