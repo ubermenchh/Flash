@@ -5,7 +5,9 @@ my little linear algebra library
 
 #### Vector Functions
 <details>
-- <summary>`Vector* InitVector(size_t size)`</summary>
+<summary>
+- `Vector* InitVector(size_t size)`
+</summary>
 Initializes a Vector of shape (1, size)
 </details>
 - `void FreeVector(Vector* v)`
