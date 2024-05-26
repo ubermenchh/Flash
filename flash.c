@@ -855,6 +855,7 @@ Vector* MatrixEig(Matrix* m) {
     for (int i = 0; i < out->size; i++) {
         out->data[i] = Q->data[i * out->size + i];
     }
+    FreeMatrix(Q);
     return out;
 }
 
@@ -914,6 +915,9 @@ SVDStruct SVD(Matrix* m) {
         }
     }
     Vector* Sigma = MatrixDiagonal(S, 0);
+    FreeMatrix(S);
+    FreeMatrixTuple(US);
+    FreeMatrixTuple(SV);
     return (SVDStruct){U, Sigma, MatrixTranspose(V)};
 }
 
@@ -1147,7 +1151,9 @@ bool MatrixAllClose(Matrix* m, Matrix* n) {
 
 Matrix* MatrixSolve(Matrix* m, Matrix* n) {
     Matrix* m_inv = MatrixInverse(m);
-    return MatrixMul(MatrixTranspose(n), m_inv);
+    Matrix* out = MatrixMul(MatrixTranspose(n), m_inv);
+    FreeMatrix(m_inv);
+    return out;
 }
 
 Matrix* MatrixAbs(Matrix* m) {
@@ -1197,6 +1203,12 @@ Matrix* MatrixEigVec(Matrix* m) {
             eig->data[j * m->cols + i] = eigenvector->data[j] / norm;
         }
     }
+
+    FreeVector(eigenvalues);
+    FreeMatrix(A);
+    FreeMatrix(eigenvector);
+    FreeSVDStruct(svd);
+
     return eig;
 }
 

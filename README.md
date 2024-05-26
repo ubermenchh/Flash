@@ -4,7 +4,7 @@ my little linear algebra library
 ### Docs
 
 #### Vector Functions
-- `Vector* InitVector(size_t size)`
+- <a href="#" onclick="Initialize a Vector of shape (1, size)">`Vector* InitVector(size_t size)`</a>
 - `void FreeVector(Vector* v)`
 - `void VectorSetElements(Vector* v, double* values)`
 - `void VectorSet(Vector* v, size_t index, double value)`
@@ -83,8 +83,16 @@ my little linear algebra library
 - `Matrix* MatrixAbs(Matrix* m)` 
 - `Matrix* CholeskyDecomposition(Matrix* m)`
 - `SVDStruct SVD(Matrix* m)`
+- `Matrix* MatrixEigVec(Matrix* m)`
+- `Matrix* ToMatrix(Vector* v)`
+- `Matrix* MatrixVectorMul(Matrix* m, Vector* v)`
+- `Matrix* MatrixScalarAdd(Matrix* m, double x)`
+- `Matrix* MatrixScalarSub(Matrix* m, double x)`
+- `Matrix* MatrixScalarMul(Matrix* m, double x)`
+- `Matrix* MatrixScalarDiv(Matrix* m, double x)`
+- `Matrix* MatrixMultiply(Matrix* m, Matrix* n)`
+- `double MatrixLogDeterminant(Matrix* m)`
 
 #### TODO
-- Matrix functions
-    - [ ] norm (l2)
-    - [ ] eigenvectors
+- Cuda
+- Python Frontend (maybe someday)

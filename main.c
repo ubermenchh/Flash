@@ -1,15 +1,21 @@
 #include <stdio.h>
+#include <time.h>
 
 #include "flash.h"
 
 int main(void) {
-    Matrix* m = InitMatrix(3, 3);
-    double m_values[] = {10, -45, 92, -91, 21, 4, 23, 0, -81};
-    SetElements(m, m_values);
+    clock_t start = clock();
+    Matrix* m = RandMatrix(1000, 1000, 69);
+    Matrix* n = RandMatrix(1000, 1000, 42);
+    Matrix* prod = MatrixMul(m, n);
+    clock_t end = clock();
 
-    PrintMatrix(m);
-    printf("%f | %f \n", MatrixDeterminant(m), MatrixLogDeterminant(m));
+    PrintMatrix(prod);
+    double elapsed_time = ((double) (end - start)) / CLOCKS_PER_SEC * 1000;
+    printf("Runtime: %.3f milliseconds\n", elapsed_time);
 
     FreeMatrix(m);
+    FreeMatrix(n);
+    FreeMatrix(prod);
 }
 

@@ -6,8 +6,6 @@
 #include <assert.h>
 #include <string.h>
 
-#define MAX_ROWS 1024
-#define MAX_COLS 1024
 
 typedef struct {
     size_t size;
