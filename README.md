@@ -4,7 +4,10 @@ my little linear algebra library
 ### Docs
 
 #### Vector Functions
-- <a href="#" onclick="Initialize a Vector of shape (1, size)">`Vector* InitVector(size_t size)`</a>
+<details>
+- <summary>`Vector* InitVector(size_t size)`</summary>
+Initializes a Vector of shape (1, size)
+</details>
 - `void FreeVector(Vector* v)`
 - `void VectorSetElements(Vector* v, double* values)`
 - `void VectorSet(Vector* v, size_t index, double value)`
