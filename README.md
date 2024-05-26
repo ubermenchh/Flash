@@ -5,7 +5,7 @@ my little linear algebra library
 
 ### Vector Functions
 | Function | Description |
---------------------------
+| :------- | :---------- |
 | `Vector* InitVector(size_t size)` | Initializes a Vector of shape (1, size) |
 | `void FreeVector(Vector* v)` | Frees up the memory assigned to a `Vector*` | 
 | `void VectorSetElements(Vector* v, double* values)` | Sets the data of the vector to the elements of an array |
@@ -34,7 +34,7 @@ my little linear algebra library
 
 ### Matrix Functions
 | Function | Description |
---------------------------
+| :------- | :---------- |
 | `Matrix* InitMatrix(int rows, int cols)` | Initializes a matrix with the specified number of rows and columns |
 | `void FreeMatrix(Matrix* m)` | Frees up the memory assigned to a `Matrix*` |
 | `void SetElements(Matrix* m, double* values)` | Sets the data of the matrix to the elements of an array |
@@ -98,7 +98,7 @@ my little linear algebra library
 
 ### Misc. Functions
 | Function | Description |
---------------------------
+| :------- | :---------- |
 | `double radian_to_degrees(double x)` | Converts an angle measure in radian to degrees. | 
 | `void FreeMatrixTuple(MatrixTuple mt)` | Frees up the memory assigned to a `MatrixTuple` |
 | `void FreeSVDStruct(SVDStruct svd)` | Frees up the memory assigned to a `SVDStruct` |
