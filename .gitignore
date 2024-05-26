@@ -1,6 +1,3 @@
-build/
-Flash-egg.info/
-
 main
 flash_wrapper.c 
 setup.py 

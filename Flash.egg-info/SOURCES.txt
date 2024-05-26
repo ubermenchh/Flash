@@ -1,9 +1,0 @@
-LICENSE
-README.md
-flash.c
-flash_wrapper.c
-setup.py
-Flash.egg-info/PKG-INFO
-Flash.egg-info/SOURCES.txt
-Flash.egg-info/dependency_links.txt
-Flash.egg-info/top_level.txt
