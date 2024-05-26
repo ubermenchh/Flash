@@ -1,14 +1,18 @@
 # Flash
 my little linear algebra library
 
-### Docs
+## Docs
 
-#### Vector Functions
+### Vector Functions
 <details>
 <summary>
-- `Vector* InitVector(size_t size)`
+#### `Vector* InitVector(size_t size)`
 </summary>
 Initializes a Vector of shape (1, size)
+```
+InitVector(3);      # A vector of size (1, 3)
+InitVector(1024);   # A vector of size (1, 1024)
+```
 </details>
 - `void FreeVector(Vector* v)`
 - `void VectorSetElements(Vector* v, double* values)`
