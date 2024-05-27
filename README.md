@@ -1,5 +1,6 @@
 # Flash
 my little linear algebra library
+![Flash](./flash.png)
 
 ## Docs
 
