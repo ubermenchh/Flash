@@ -1,6 +1,6 @@
 # Flash
 my little linear algebra library
-![Flash](./flash.png)
+<img src="./flash.png" width=200 height=200>
 
 ## Docs
 
