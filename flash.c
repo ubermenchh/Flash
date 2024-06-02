@@ -1,5 +1,6 @@
 #include "flash.h"
 
+
 /*
 *****************************************************
 ***************** HELPER FUNCTIONS ******************
@@ -332,7 +333,7 @@ void PrintMatrix(Matrix* m) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            double val = fabs(m->data[i * m->cols + j]);
+            double val = fabs(MAT_AT(m, i, j));
             if (val > max_val) {
                 max_val = val;
             }
@@ -356,7 +357,7 @@ void PrintMatrix(Matrix* m) {
             printf(" [");
         }
         for (int j = 0; j < m->cols; j++) {
-            printf("%*.*f ", max_digits, 5, m->data[i * m->cols + j]);
+            printf("%*.*f ", max_digits, 5, MAT_AT(m, i, j));
         }
         if (i != m->rows-1) {
             printf(" ]\n");
@@ -391,7 +392,7 @@ Matrix* MatrixAdd(Matrix* m, Matrix* n) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            out->data[i * m->cols + j] = m->data[i * m->cols + j] + n->data[i * n->cols + j];
+           MAT_AT(out, i, j) = MAT_AT(m, i, j) + MAT_AT(n, i, j);
         }
     }
     return out;
@@ -403,7 +404,7 @@ Matrix* MatrixSub(Matrix* m, Matrix* n) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            out->data[i * m->cols + j] = m->data[i * m->cols + j] - n->data[i * n->cols + j];
+           MAT_AT(out, i, j) = MAT_AT(m, i, j) - MAT_AT(n, i, j);
         }
     }
     return out;
@@ -414,7 +415,7 @@ Matrix* MatrixScale(Matrix* m, int x) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            out->data[i * m->cols + j] = m->data[i * m->cols + j] * x;
+            MAT_AT(out, i, j) = MAT_AT(m, i, j) * x;
         }
     }
     return out;
@@ -425,7 +426,7 @@ Matrix* MatrixTranspose(Matrix* m) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            out->data[j * m->rows + i] = m->data[i * m->cols + j];
+            MAT_AT(out, j, i) = MAT_AT(m, i, j);
         }
     }
     return out;
@@ -442,7 +443,7 @@ Matrix* OnesMatrix(int rows, int cols) {
     Matrix* out = InitMatrix(rows, cols);
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
-            out->data[i * out->cols + j] = 1.0;
+            MAT_AT(out, i, j) = 1.0;
         }
     }
     return out;
@@ -451,7 +452,7 @@ Matrix* OnesMatrix(int rows, int cols) {
 Matrix* IdentityMatrix(int side) {
     Matrix* out = ZerosMatrix(side, side);
     for (int i = 0, j = 0; i < out->rows && j < out->cols; i++, j++) {
-        out->data[i * out->cols + j] = 1.0; 
+        MAT_AT(out, i, j) = 1.0; 
     }
     return out;
 }
@@ -464,7 +465,7 @@ Matrix* MatrixMul(Matrix* m, Matrix* n) {
         for (int j = 0; j < n->cols; j++) {
             double sum = 0.0;
             for (int k = 0; k < m->cols; k++) {
-                sum += m->data[i * m->cols + k] * n->data[k * n->cols + j];
+                sum += MAT_AT(m, i, k) * MAT_AT(n, k, j);
             }
             out->data[i * out->cols + j] = sum;
         }
@@ -480,7 +481,7 @@ Matrix* MatrixSlice(Matrix* m, int from_rows, int to_rows, int from_cols, int to
     Matrix* out = InitMatrix(new_rows, new_cols);
     for (int i = from_rows, out_i = 0; (i < to_rows && out_i < out->rows); i++, out_i++) {
         for (int j = from_cols, out_j = 0; (j < to_cols && out_j < out->cols); j++, out_j++) {
-            out->data[out_i * out->cols + out_j] = m->data[i * m->cols + j];
+            MAT_AT(out, out_i, out_j) = MAT_AT(m, i, j);
         }
     }
     return out;
@@ -498,22 +499,22 @@ MatrixTuple LUDecomposition(Matrix* A) {
         for (int k = 0; k < n; k++) {
             double sum = 0.0;
             for (int j = 0; j < i; j++) {
-                sum += L->data[i * n + j] * U->data[j * n + k];
+                sum += MAT_AT(L, i, j) * MAT_AT(U, j, k);
             }
-            U->data[i * n + k] = A->data[i * n + k] - sum;
+            MAT_AT(U, i, k) = MAT_AT(A, i, k) - sum;
         }
 
         // lower triangular
         for (int k = i + 1; k < n; k++) {
             double sum = 0.0;
             for (int j = 0; j < i; j++) {
-                sum += L->data[k * n + j] * U->data[j * n + i];
+                sum += MAT_AT(L, k, j) * MAT_AT(U, j, i);
             }
-            L->data[k * n + i] = (A->data[k * n + i] - sum) / U->data[i * n + i];
+            MAT_AT(L, k, i) = (MAT_AT(A, k, i) - sum) / MAT_AT(U, i, i);
         }
     
         // diagonal elements of L 
-        L->data[i * n + i] = 1.0;
+        MAT_AT(L, i, i) = 1.0;
     }
     return (MatrixTuple){L, U}; 
 }
@@ -537,7 +538,7 @@ double MatrixDeterminant(Matrix* m) {
                 if (j != 0) {
                     for (int k = 0; k < n; k++) {
                         if (k != i) {
-                            submatrix->data[sub_row * (n-1) + sub_col] = m->data[j * n + k];
+                            MAT_AT(submatrix, sub_row, sub_col) = MAT_AT(m, j, k);
                             sub_col++;
                             if (sub_col == n-1) {
                                 sub_col = 0;
@@ -574,7 +575,7 @@ double FrobeniusNorm(Matrix* m) {
     double out = 0.0;
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            out += (m->data[i * m->cols + j] * m->data[i * m->cols + j]);
+            out += MAT_AT(m, i, j) * MAT_AT(m, i, j);
         }
     }
     return sqrt(out);
@@ -586,7 +587,8 @@ double L1Norm(Matrix* m) {
     for (int i = 0; i < m->rows; i++) {
         double col_sum = 0.0;
         for (int j = 0; j < m->cols; j++) {
-            col_sum += fabs(m->data[j * m->rows + i]);
+            //col_sum += fabs(m->data[j * m->rows + i]);
+            col_sum += fabs(MAT_AT(m, j, i));
         }
         if (col_sum > out) {
             out = col_sum;
@@ -601,7 +603,8 @@ double InfiniyNorm(Matrix* m) {
     for (int i = 0; i < m->rows; i++) {
         double row_sum = 0.0;
         for (int j = 0; j < m->cols; j++) {
-            row_sum += fabs(m->data[i * m->rows + j]);
+            //row_sum += fabs(m->data[i * m->rows + j]);
+            row_sum += fabs(MAT_AT(m, i, j));
         }
         if (row_sum > out) {
             out = row_sum;
@@ -632,12 +635,12 @@ Matrix* MatrixConcat(Matrix* m, Matrix* n, int axis) {
         Matrix* out = InitMatrix(m->rows, new_cols);
         for (int i = 0; i < m->rows; i++) {
             for (int j = 0; j < m->cols; j++) {
-                out->data[i * new_cols + j] = m->data[i * m->cols + j];    
+                MAT_AT(out, i, j) = MAT_AT(m, i, j);    
             }
         }
         for (int i = 0; i < n->rows; i++) {
             for (int j = 0; j < n->cols; j++) {
-                out->data[i * new_cols + (j+m->rows)] = n->data[i * n->cols + j];
+                MAT_AT(out, i, j+m->rows) = MAT_AT(n, i, j);
             }
         }
         return out;
@@ -648,12 +651,12 @@ Matrix* MatrixConcat(Matrix* m, Matrix* n, int axis) {
         Matrix* out = InitMatrix(new_rows, m->cols);
         for (int i = 0; i < m->rows; i++) {
             for (int j = 0; j < m->cols; j++) {
-                out->data[i * m->rows + j] = m->data[i * m->rows + j];
+                MAT_AT(out, i, j) = MAT_AT(m, i, j);
             }
         }
         for (int i = 0; i < n->rows; i++) {
             for (int j = 0; j < n->cols; j++) {
-                out->data[(i) * m->rows + (j+(m->rows*m->cols))] = n->data[i * n->rows + j];
+                MAT_AT(out, i, (j+(m->rows*m->cols))) = MAT_AT(n, i, j);
             }
         }
         return out;
@@ -677,7 +680,7 @@ Matrix* MatrixNormalize(Matrix* m) {
     if (Norm > 0.0) {
         for (int i = 0; i < m->rows; i++) {
             for (int j = 0; j < m->cols; j++) {
-                out->data[i * m->cols + j] = (m->data[i * m->cols + j] / Norm);
+                MAT_AT(out, i, j) = (MAT_AT(m, i, j) / Norm);
             }
         }
     }
@@ -690,26 +693,26 @@ void swap_rows(Matrix* m, int row1, int row2) {
 
     for (int i = 0; i < m->cols; i++) {
         double temp = m->data[row1 * m->cols + i];
-        m->data[row1 * m->cols + i] = m->data[row2 * m->cols + i];
-        m->data[row2 * m->cols + i] = temp;
+        MAT_AT(m, row1, i) = MAT_AT(m, row2, i);
+        MAT_AT(m, row2, i) = temp;
     }
    }
 
 void mult_row(Matrix* m, int row, double x) {
     for (int j = 0; j < m->cols; j++) {
-        m->data[row * m->cols + j] *= x;
+        MAT_AT(m, row, j) *= x;
     }
 }
 
 void add_row(Matrix* m, int row1, int row2, double scalar) {
     for (int j = 0; j < m->cols; j++) {
-        m->data[row1 * m->cols + j] += scalar * m->data[row2 * m->cols + j];
+        MAT_AT(m, row1, j) += scalar * MAT_AT(m, row2, j);
     }
 }
 
 int find_pivot(Matrix* m, int col, int row) {
     for (int i = row; i < m->rows; i++) {
-        if (fabs(m->data[i * m->cols + col]) > 1e-10) {
+        if (fabs(MAT_AT(m, i, col)) > 1e-10) {
             return i;
         }
     }
@@ -730,11 +733,11 @@ Matrix* MatrixRowEchelon(Matrix* m) {
         }
 
         swap_rows(out, lead, pivot);
-        mult_row(out, lead, 1.0 / out->data[lead * cols + lead]);
+        mult_row(out, lead, 1.0 / MAT_AT(out, lead, lead));
 
         for (int i = 0; i < rows; i++) {
             if (i != lead) {
-                add_row(out, i, lead, -out->data[i * cols + lead]);
+                add_row(out, i, lead, -MAT_AT(out, i, lead));
             }
         }
 
@@ -742,8 +745,8 @@ Matrix* MatrixRowEchelon(Matrix* m) {
     }
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
-            if (out->data[i * out->cols + j] == -0.0) {
-                out->data[i * out->cols + j] = 0.0;
+            if (MAT_AT(out, i, j) == -0.0) {
+                MAT_AT(out, i, j) = 0.0;
             }
         }
     }
@@ -764,7 +767,7 @@ Matrix* MatrixInverse(Matrix* m) {
     Matrix* inv = InitMatrix(n, n);
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < n; j++) {
-            inv->data[i * n + j] = row_ech->data[i * (2*n) + n + j];
+            MAT_AT(inv, i, j) = row_ech->data[i * (2*n) + n + j];
         } 
     }
     FreeMatrix(row_ech);
@@ -775,26 +778,27 @@ Matrix* MatrixInverse(Matrix* m) {
 
 void matrix_col_copy(Matrix* m, int col, Matrix* dst, int dst_col) {
     for (int i = 0; i < m->rows; i++) {        
-        dst->data[i * dst->cols + dst_col] = m->data[i * m->cols + col];     
+        MAT_AT(dst, i, dst_col) = MAT_AT(m, i, col);     
     }
 }
 
 void matrix_col_subtract(Matrix* m, int col, Matrix* dst, int dst_col, double scalar) {
     for (int i = 0; i < m->rows; i++) {
-        m->data[i * dst->cols + col] -= scalar * dst->data[i * m->cols + dst_col];
+        //m->data[i * dst->cols + col] -= scalar * dst->data[i * m->cols + dst_col];
+        MAT_AT(m, i, col) -= scalar * MAT_AT(dst, i, dst_col);
     }
 }
 
 void matrix_col_divide(Matrix* m, int col, double scalar) {
     for (int i = 0; i < m->rows; i++) {
-        m->data[i * m->cols + col] /= scalar;
+        MAT_AT(m, i, col) /= scalar;
     }
 }
 
 double vector_length(Matrix* m, int col) {
     double sum = 0.0;
     for (int i = 0; i < m->rows; i++) {
-        sum += m->data[i * m->cols + col] * m->data[i * m->cols + col];
+        sum += MAT_AT(m, i, col) * MAT_AT(m, i, col);
     }
     return sqrt(sum);
 }
@@ -802,7 +806,7 @@ double vector_length(Matrix* m, int col) {
 double vector_dot(Matrix* m, int col1, Matrix* n, int col2) {
     double dot = 0;
     for (int i = 0; i < m->rows; i++) {
-        dot += m->data[i * m->cols + col1] * n->data[i * n->cols + col2];
+        dot += MAT_AT(m, i, col1) * MAT_AT(n, i, col2);
     }
     return dot;
 }
@@ -820,11 +824,11 @@ MatrixTuple QRDecomposition(Matrix* m) {
         matrix_col_copy(A, i, Q, i);
         for (int j = 0; j < i; j++) {
             double r = vector_dot(Q, i, Q, j); 
-            R->data[j * A->cols + i] = r;
+            MAT_AT(R, j, i) = r;
             matrix_col_subtract(Q, i, Q, j, r);
         }
         double norm = vector_length(Q, i);
-        R->data[i * A->rows + i] = norm;
+        MAT_AT(R, i, i) = norm;
         matrix_col_divide(Q, i, norm);
     }
     
@@ -853,7 +857,7 @@ Vector* MatrixEig(Matrix* m) {
     Matrix* Q = QRAlgorithm(m);
 
     for (int i = 0; i < out->size; i++) {
-        out->data[i] = Q->data[i * out->size + i];
+        out->data[i] = MAT_AT(Q, i, i);
     }
     FreeMatrix(Q);
     return out;
@@ -865,7 +869,7 @@ int non_zero_rows(Matrix* m) {
         for (int j = 0; j < m->cols; j++) {
             if (m->data[i * m->cols + j] == 0) {
                 continue;
-            } else if (m->data[i * m->cols + j] != 0 && (i * m->cols + j + 1) % m->cols == 0) {
+            } else if (MAT_AT(m, i, j) != 0 && (i * m->cols + j + 1) % m->cols == 0) {
                 count++;
             }
         }
@@ -923,11 +927,19 @@ SVDStruct SVD(Matrix* m) {
 
 Vector* MatrixDiagonal(Matrix* m, int k) {
     assert(m->rows == m->cols);
+    assert(abs(k) < m->rows);
     Vector* out = InitVector(m->rows - abs(k));
-    int start = (k >= 0) ? 0 : -k;
-    for (int i = start, j = 0; i < m->rows - abs(k) && j < out->size; i++, j++) {
-        out->data[j] = m->data[i * m->rows + i + k];
+
+    if (k >= 0) {
+        for (int i = 0; i < (m->rows - abs(k)); i++) {
+            out->data[i] = MAT_AT(m, i, i + abs(k));
+        }
+    } else if (k < 0) {
+        for (int i = 0; i < (m->rows - abs(k)); i++) {
+            out->data[i] = MAT_AT(m, i + abs(k), i);
+        }
     }
+
     return out;
 }
 
@@ -938,9 +950,9 @@ Matrix* MatrixTril(Matrix* m, int diag) {
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
             if (j <= i - diag) {
-                out->data[i * out->cols + j] = m->data[i * m->cols + j];
+                MAT_AT(out, i, j) = MAT_AT(m, i, j);
             } else {
-                out->data[i * out->cols + j] = 0.0;
+                MAT_AT(out, i, j) = 0.0;
             }
         }
     }
@@ -954,9 +966,9 @@ Matrix* MatrixTriu(Matrix* m, int diag) {
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
             if (j >= i + diag) {
-                out->data[i * out->cols + j] = m->data[i * m->cols + j];
+                MAT_AT(out, i, j) = MAT_AT(m, i, j);
             } else {
-                out->data[i * out->cols + j] = 0.0;
+                MAT_AT(out, i, j) = 0.0;
             }
         }
     }
@@ -1012,8 +1024,8 @@ Matrix* MatrixMaxVals(Matrix* m, int dim) {
         Matrix* out_m = InitMatrix(m->rows, 1);
         for (int i = 0; i < m->rows; i++) {
             for (int j = 0; j < m->cols; j++) {
-                if (m->data[i * m->rows + j] > max_val) {
-                    max_val = m->data[i * m->rows + j];
+                if (MAT_AT(m, i, j) > max_val) {
+                    max_val = MAT_AT(m, i, j);
                 }
             }
             out_m->data[i] = max_val;
@@ -1024,8 +1036,8 @@ Matrix* MatrixMaxVals(Matrix* m, int dim) {
         Matrix* out_m = InitMatrix(1, m->cols);
         for (int j = 0; j < m->cols; j++) {
             for (int i = 0; i < m->rows; i++) {
-                if (m->data[i * m->cols + j] > max_val) {
-                    max_val = m->data[i * m->cols + j];
+                if (MAT_AT(m, i, j) > max_val) {
+                    max_val = MAT_AT(m, i, j);
                 }
             }
             out_m->data[j] = max_val;
@@ -1044,8 +1056,8 @@ Matrix* MatrixMinVals(Matrix* m, int dim) {
         Matrix* out_m = InitMatrix(m->rows, 1);
         for (int i = 0; i < m->rows; i++) {
             for (int j = 0; j < m->cols; j++) {
-                if (m->data[i * m->rows + j] < min_val) {
-                    min_val = m->data[i * m->rows + j];
+                if (MAT_AT(m, i, j) < min_val) {
+                    min_val = MAT_AT(m, i, j); 
                 }
             }
             out_m->data[i] = min_val;
@@ -1056,9 +1068,8 @@ Matrix* MatrixMinVals(Matrix* m, int dim) {
         Matrix* out_m = InitMatrix(1, m->cols);
         for (int j = 0; j < m->cols; j++) {
             for (int i = 0; i < m->rows; i++) {
-                if (m->data[i * m->cols + j] < min_val) {
-                    min_val = m->data[i * m->cols + j];
-                }
+                if (MAT_AT(m, i, j) < min_val) {
+                    min_val = MAT_AT(m, i, j);                }
             }
             out_m->data[j] = min_val;
             min_val = INFINITY;
@@ -1078,7 +1089,7 @@ Matrix* MatrixMeanVals(Matrix* m, int dim) {
         Matrix* out_m = InitMatrix(m->rows, 1);
         for (int i = 0; i < m->rows; i++) {
             for (int j = 0; j < m->cols; j++) {
-                row_sum += m->data[i * m->cols + j];
+                row_sum += MAT_AT(m, i, j); 
             }
             out_m->data[i] = row_sum / row_elem;
             row_sum = 0.0;
@@ -1089,7 +1100,7 @@ Matrix* MatrixMeanVals(Matrix* m, int dim) {
         Matrix* out_m = InitMatrix(1, m->cols);
         for (int j = 0; j < m->cols; j++) {
             for (int i = 0; i < m->rows; i++) {
-                col_sum += m->data[i * m->cols + j];
+                col_sum += MAT_AT(m, i, j);
             }
             out_m->data[j] = col_sum / col_elem;
             col_sum = 0.0;
@@ -1109,7 +1120,7 @@ Matrix* MatrixStdVals(Matrix* m, int dim) {
         Matrix* out_m = InitMatrix(m->rows, 1);
         for (int i = 0; i < m->rows; i++) {
             for (int j = 0; j < m->cols; j++) {
-                row_sum += m->data[i * m->cols + j] * m->data[i * m->cols + j];
+                row_sum += MAT_AT(m, i, j) * MAT_AT(m, i, j);
             }
             out_m->data[i] = sqrt(row_sum / row_elem);
             row_sum = 0.0;
@@ -1120,7 +1131,7 @@ Matrix* MatrixStdVals(Matrix* m, int dim) {
         Matrix* out_m = InitMatrix(1, m->cols);
         for (int j = 0; j < m->cols; j++) {
             for (int i = 0; i < m->rows; i++) {
-                col_sum += m->data[i * m->cols + j] * m->data[i * m->cols + j];
+                col_sum += MAT_AT(m, i, j) * MAT_AT(m, i, j);
             }
             out_m->data[j] = sqrt(col_sum / col_elem);
             col_sum = 0.0;
@@ -1141,7 +1152,7 @@ bool MatrixAllClose(Matrix* m, Matrix* n) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            if (fabs(m->data[i * m->cols + j] - n->data[i * n->cols + j]) > (atol + rtol * fabs(n->data[i * n->cols + j]))) {
+            if (fabs(MAT_AT(m, i, j) - MAT_AT(n, i, j)) > (atol + rtol * fabs(MAT_AT(n, i, j)))) {
                 return false;
             }
         }
@@ -1161,7 +1172,7 @@ Matrix* MatrixAbs(Matrix* m) {
     
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
-            out->data[i * out->cols + j] = fabs(m->data[i * out->cols + j]);
+            MAT_AT(out, i, j) = fabs(MAT_AT(m, i, j));
         }
     }
     return out;
@@ -1175,12 +1186,12 @@ Matrix* CholeskyDecomposition(Matrix* m) {
         for (int j = 0; j <= i; j++) {
             double sum_val = 0.0;
             for (int k = 0; k < j; k++) {
-                sum_val += L->data[i * L->cols + k] * L->data[j * L->cols + k];
+                sum_val += MAT_AT(L, i, k) * MAT_AT(L, j, k);
             }
             if (i == j) {
-                L->data[i * L->cols + j] = sqrt(m->data[i * m->cols + j] - sum_val);
+                MAT_AT(L, i, j) = sqrt(MAT_AT(m, i, j) - sum_val);
             } else {
-                L->data[i * L->cols + j] = (1.0 / L->data[j * L->cols + j]) * (m->data[i * m->cols + j] - sum_val); 
+                MAT_AT(L, i, j) = (1.0 / MAT_AT(L, j, j) * (MAT_AT(m, i, j) - sum_val)); 
             }
         }
     }
@@ -1200,7 +1211,7 @@ Matrix* MatrixEigVec(Matrix* m) {
 
         double norm = FrobeniusNorm(eigenvector);
         for (int j = 0; j < m->rows; j++) {
-            eig->data[j * m->cols + i] = eigenvector->data[j] / norm;
+            MAT_AT(eig, j, i) = eigenvector->data[j] / norm;
         }
     }
 
@@ -1227,7 +1238,7 @@ Matrix* MatrixVectorMul(Matrix* m, Vector* v) {
 
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
-            out->data[i * out->cols + j] = m->data[i * m->cols + j] * v->data[j];
+            MAT_AT(out, i, j) = MAT_AT(m, i, j) * v->data[j];
         }
     }
     return out;
@@ -1238,7 +1249,7 @@ Matrix* MatrixScalarAdd(Matrix* m, double x) {
 
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
-            out->data[i * out->cols + j] += x;
+            MAT_AT(out, i, j) += x;
         }
     }
     return out;
@@ -1249,7 +1260,7 @@ Matrix* MatrixScalarSub(Matrix* m, double x) {
 
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
-            out->data[i * out->cols + j] -= x;
+            MAT_AT(out, i, j) -= x;
         }
     }
     return out;
@@ -1260,7 +1271,7 @@ Matrix* MatrixScalarMul(Matrix* m, double x) {
 
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
-            out->data[i * out->cols + j] *= x;
+            MAT_AT(out, i, j) *= x;
         }
     }
     return out;
@@ -1271,7 +1282,7 @@ Matrix* MatrixScalarDiv(Matrix* m, double x) {
 
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
-            out->data[i * out->cols + j] /= x;
+            MAT_AT(out, i, j) /= x;
         }
     }
     return out;
@@ -1283,7 +1294,7 @@ Matrix* MatrixMultiply(Matrix* m, Matrix* n) {
 
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
-            out->data[i * out->cols + j] *= n->data[i * n->cols + j];
+            MAT_AT(out, i, j) *= MAT_AT(n, i, j);
         }
     }
     return out;

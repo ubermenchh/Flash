@@ -6,6 +6,7 @@
 #include <assert.h>
 #include <string.h>
 
+#define MAT_AT(m, i, j) (m)->data[(i) * (m)->cols + (j)]
 
 typedef struct {
     size_t size;
