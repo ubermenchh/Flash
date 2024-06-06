@@ -229,7 +229,7 @@ Vector* VectorTransform(Vector* v, Matrix* m) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            out->data[i] += (m->data[i * m->cols + j] * v->data[j]);
+            out->data[i] += (MAT_AT(m, i, j) * v->data[j]);
         }
     }
     return out;
@@ -387,28 +387,41 @@ Matrix* RandMatrix(int rows, int cols, int seed) {
 }
 
 Matrix* MatrixAdd(Matrix* m, Matrix* n) {
-    assert(m->rows * m->cols == n->rows * n->cols);
-    Matrix* out = InitMatrix(m->rows, m->cols);
+    int out_rows = (m->rows > n->rows) ? m->rows : n->rows;
+    int out_cols = (m->cols > n->cols) ? m->cols : n->cols;
+
+    assert(m->rows == n->rows || m->rows == 1 || n->rows == 1);
+    assert(m->cols == n->cols || m->cols == 1 || n->cols == 1);
+
+    Matrix* out = InitMatrix(out_rows, out_cols);
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-           MAT_AT(out, i, j) = MAT_AT(m, i, j) + MAT_AT(n, i, j);
+            double m_val = MAT_AT(m, (m->rows == 1) ? 0 : i, (m->cols == 1) ? 0 : j);
+            double n_val = MAT_AT(n, (n->rows == 1) ? 0 : i, (n->cols == 1) ? 0 : j);
+           MAT_AT(out, i, j) = m_val + n_val;
         }
     }
     return out;
 }
 
 Matrix* MatrixSub(Matrix* m, Matrix* n) {
-    assert(m->rows * m->cols == n->rows * n->cols);
-    Matrix* out = InitMatrix(m->rows, m->cols);
+    int out_rows = (m->rows > n->rows) ? m->rows : n->rows;
+    int out_cols = (m->cols > n->cols) ? m->cols : n->cols;
+
+    assert(m->rows == n->rows || m->rows == 1 || n->rows == 1);
+    assert(m->cols == n->cols || m->cols == 1 || n->cols == 1);
+
+    Matrix* out = InitMatrix(out_rows, out_cols);
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-           MAT_AT(out, i, j) = MAT_AT(m, i, j) - MAT_AT(n, i, j);
+            double m_val = MAT_AT(m, (m->rows == 1) ? 0 : i, (m->cols == 1) ? 0 : j);
+            double n_val = MAT_AT(n, (n->rows == 1) ? 0 : i, (n->cols == 1) ? 0 : j);
+           MAT_AT(out, i, j) = m_val - n_val;
         }
     }
-    return out;
-}
+    return out;}
 
 Matrix* MatrixScale(Matrix* m, int x) {
     Matrix* out = InitMatrix(m->rows, m->cols);
@@ -548,11 +561,8 @@ double MatrixDeterminant(Matrix* m) {
                     }
                 } 
             }
-            //printf("Sub-Matrix for row %d\n", i);
-            //PrintMatrix(submatrix);
 
             out += (i % 2 == 0 ? 1 : -1) * m->data[i] * MatrixDeterminant(submatrix);
-            //printf("out = %f | m->data[i] = %f\n", out, m->data[i]);
             FreeMatrix(submatrix);
         }
     }
@@ -587,7 +597,6 @@ double L1Norm(Matrix* m) {
     for (int i = 0; i < m->rows; i++) {
         double col_sum = 0.0;
         for (int j = 0; j < m->cols; j++) {
-            //col_sum += fabs(m->data[j * m->rows + i]);
             col_sum += fabs(MAT_AT(m, j, i));
         }
         if (col_sum > out) {
@@ -603,7 +612,6 @@ double InfiniyNorm(Matrix* m) {
     for (int i = 0; i < m->rows; i++) {
         double row_sum = 0.0;
         for (int j = 0; j < m->cols; j++) {
-            //row_sum += fabs(m->data[i * m->rows + j]);
             row_sum += fabs(MAT_AT(m, i, j));
         }
         if (row_sum > out) {
@@ -784,7 +792,6 @@ void matrix_col_copy(Matrix* m, int col, Matrix* dst, int dst_col) {
 
 void matrix_col_subtract(Matrix* m, int col, Matrix* dst, int dst_col, double scalar) {
     for (int i = 0; i < m->rows; i++) {
-        //m->data[i * dst->cols + col] -= scalar * dst->data[i * m->cols + dst_col];
         MAT_AT(m, i, col) -= scalar * MAT_AT(dst, i, dst_col);
     }
 }
