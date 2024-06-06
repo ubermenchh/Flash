@@ -1,3 +1,4 @@
 main
+main.c
 flash_wrapper.c 
 setup.py 

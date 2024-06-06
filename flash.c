@@ -1,6 +1,5 @@
 #include "flash.h"
 
-
 /*
 *****************************************************
 ***************** HELPER FUNCTIONS ******************
@@ -279,12 +278,9 @@ bool VectorAllClose(Vector* v, Vector* w) {
     if (v->size != w->size) {
         return false;
     }
-    
-    double atol = 1e-08;
-    double rtol = 1e-05;
 
     for (int i = 0; i < v->size; i++) {
-        if (fabs(v->data[i] - w->data[i]) > (atol + rtol * fabs(w->data[i]))) {
+        if (fabs(v->data[i] - w->data[i]) > (ATOL + RTOL * fabs(w->data[i]))) {
             return false;
         }
     }
@@ -981,6 +977,16 @@ Matrix* MatrixTriu(Matrix* m, int diag) {
     }
     return out;
 }
+
+double MatrixSum(Matrix* m) {
+    double sum = 0.0;
+
+    for (int i = 0; i < m->rows*m->cols; i++) {
+        sum += m->data[i];
+    }
+    return sum;
+}
+
 double MatrixMax(Matrix* m) {
     double max_val = -INFINITY;
     
@@ -1022,6 +1028,33 @@ double MatrixStd(Matrix* m) {
         out += (m->data[i] - mean)*(m->data[i] - mean);
     }
     return sqrt(out / num_el);
+}
+
+Matrix* MatrixSumVals(Matrix* m, int dim) {
+    double sum = 0.0;
+    if (dim == 0) {
+        Matrix* out_m = InitMatrix(m->rows, 1);
+        for (int i = 0; i <  m->rows; i++) {
+            for (int j = 0; j < m->cols; j++) {
+                sum += MAT_AT(m, i, j);
+            }
+            out_m->data[i] = sum;
+            sum = 0.0;
+        }
+        return out_m;
+    } else if (dim == 1) {
+        Matrix* out_m = InitMatrix(1, m->cols);
+        for (int j = 0; j < m->cols; j++) {
+            for (int i = 0; i < m->rows; i++) {
+                sum += MAT_AT(m, i, j);
+            }
+            out_m->data[j] = sum;
+            sum = 0.0;
+        }
+        return out_m;
+    } else {
+        return NULL;
+    }
 }
 
 Matrix* MatrixMaxVals(Matrix* m, int dim) {
@@ -1153,13 +1186,10 @@ bool MatrixAllClose(Matrix* m, Matrix* n) {
     if (m->rows != n->rows || m->cols != n->cols) {
         return false;
     }
-    
-    double atol = 1e-08;
-    double rtol = 1e-05;
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            if (fabs(MAT_AT(m, i, j) - MAT_AT(n, i, j)) > (atol + rtol * fabs(MAT_AT(n, i, j)))) {
+            if (fabs(MAT_AT(m, i, j) - MAT_AT(n, i, j)) > (ATOL + RTOL * fabs(MAT_AT(n, i, j)))) {
                 return false;
             }
         }
@@ -1309,4 +1339,475 @@ Matrix* MatrixMultiply(Matrix* m, Matrix* n) {
 
 double MatrixLogDeterminant(Matrix* m) {
     return log(MatrixDeterminant(m));
+}
+
+Matrix* MatrixPower(Matrix* m, double exp) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = pow(MAT_AT(m, i, j), exp);
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixOnesLike(Matrix* m) {
+    return OnesMatrix(m->rows, m->cols);
+}
+
+Matrix* MatrixZerosLike(Matrix* m) {
+    return ZerosMatrix(m->rows, m->cols);
+}
+
+Matrix* MatrixFull(int rows, int cols, double value) {
+    Matrix* out = InitMatrix(rows, cols);
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            MAT_AT(out, i, j) = value;
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixFullLike(Matrix* m, double value) {
+    return MatrixFull(m->rows, m->cols, value);
+}
+
+void MatrixFill(Matrix* m, double value) {
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(m, i, j) = value;
+        }
+    }
+}
+
+Matrix* MatrixReshape(Matrix* m, int rows, int cols) {
+    assert(m->rows * m->cols == rows * cols);
+    Matrix* out = InitMatrix(rows, cols);
+
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            MAT_AT(out, i, j) = MAT_AT(m, i, j);
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixFlatten(Matrix* m) {
+    Matrix* out = InitMatrix(1, m->rows*m->cols);
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = MAT_AT(m, i, j);
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixClip(Matrix* m, double min, double max) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+    
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            if (MAT_AT(m, i, j) < min) {
+                MAT_AT(out, i, j) = min;
+            } else if (MAT_AT(m, i, j) > max) {
+                MAT_AT(out, i, j) = max;
+            } else {
+                MAT_AT(out, i, j) = MAT_AT(m, i, j);
+            }
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixSin(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = sin(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixCos(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = cos(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixTan(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = tan(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixArcSin(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = asin(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixArcCos(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = acos(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixArcTan(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = atan(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixSinh(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = sinh(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixCosh(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = cosh(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixTanh(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = tanh(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixArcSinh(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = asinh(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixArcCosh(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = acosh(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixArcTanh(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = atanh(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixCumSum(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+    double sum = 0.0;
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            sum += MAT_AT(m, i, j);
+            MAT_AT(out, i, j) = sum;
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixArange(double start, double end, double step) {
+    int size = ceil((end - start) / step);
+    Matrix* out = InitMatrix(1, size);
+    double value = start;
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            MAT_AT(out, i, j) = value;
+            value += step;
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixLog(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = log(MAT_AT(out, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixLog10(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = log10(MAT_AT(out, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixLog2(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = log2(MAT_AT(out, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixLog1p(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = log1p(MAT_AT(out, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixReciprocal(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = (1 / MAT_AT(out, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixFabs(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = fabs(MAT_AT(out, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixSqrt(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = sqrt(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixRSqrt(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = (1 / sqrt(MAT_AT(m, i, j)));
+        }
+    }
+    return out;
+}
+
+double MatrixProd(Matrix* m) {
+    double out = 1.0;
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            out *= MAT_AT(m, i, j);
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixCumProd(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+    double prod = 1.0;
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            prod *= MAT_AT(m, i, j);
+            MAT_AT(out, i, j) = prod;
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixLerp(Matrix* m, Matrix* n, double weight) {
+    assert(m->rows == n->rows);
+    assert(m->cols == n->cols);
+
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            MAT_AT(out, i, j) = MAT_AT(m, i, j) + weight * (MAT_AT(n, i, j) - MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixNeg(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            MAT_AT(out, i, j) *= -1;
+        }
+    }
+    return out;
+}
+
+int MatrixNumel(Matrix* m) {
+    return m->rows * m->cols;
+}
+
+Matrix* MatrixSign(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            if (MAT_AT(m, i, j) < 0) {
+                MAT_AT(out, i, j) = -1.0;
+            } else if (MAT_AT(m, i, j) > 0) {
+                MAT_AT(out, i, j) = 1.0;
+            } else {
+                MAT_AT(out, i, j) = 0.0;
+            }
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixEq(Matrix* m, Matrix* n) {
+    assert(m->rows == n->rows);
+    assert(m->cols == n->cols);
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            MAT_AT(out, i, j) = (double)(MAT_AT(m, i, j) == MAT_AT(n, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixLT(Matrix* m, Matrix* n) {
+    assert(m->rows == n->rows);
+    assert(m->cols == n->cols);
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            MAT_AT(out, i, j) = (double)(MAT_AT(m, i, j) < MAT_AT(n, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixGT(Matrix* m, Matrix* n) {
+    assert(m->rows == n->rows);
+    assert(m->cols == n->cols);
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < out->rows; i++) {
+        for (int j = 0; j < out->cols; j++) {
+            MAT_AT(out, i, j) = (double)(MAT_AT(m, i, j) > MAT_AT(n, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixExp(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = exp(MAT_AT(m, i, j));
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixLogCumSumExp(Matrix* m) {
+    return MatrixLog(MatrixCumSum(MatrixExp(m)));
+}
+
+Matrix* MatrixLGamma(Matrix* m) {
+    Matrix* out = InitMatrix(m->rows, m->cols);
+
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            MAT_AT(out, i, j) = log(gamma(MAT_AT(m, i, j)));
+        }
+    }
+    return out;
+}
+
+void MatrixResize(Matrix* m, int rows, int cols) {
+    m->rows = rows;
+    m->cols = cols;
+}
+
+void MatrixResizeAs(Matrix* m, Matrix* n) {
+    m->rows = n->rows;
+    m->cols = n->cols;
 }

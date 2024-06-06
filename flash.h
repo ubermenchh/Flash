@@ -7,6 +7,8 @@
 #include <string.h>
 
 #define MAT_AT(m, i, j) (m)->data[(i) * (m)->cols + (j)]
+#define ATOL 1e-08
+#define RTOL 1e-05
 
 typedef struct {
     size_t size;
@@ -29,6 +31,7 @@ typedef struct {
     Vector* S;
     Matrix* V;
 } SVDStruct;
+
 
 double radian_to_degrees(double x);
 void FreeMatrixTuple(MatrixTuple mt);
@@ -100,10 +103,12 @@ int MatrixRank(Matrix* m);
 Vector* MatrixDiagonal(Matrix* m, int k);
 Matrix* MatrixTril(Matrix* m, int diag);
 Matrix* MatrixTriu(Matrix* m, int diag);
-double MatrixMax(Matrix* mm);
+double MatrixSum(Matrix* m);
+double MatrixMax(Matrix* m);
 double MatrixMin(Matrix* m);
 double MatrixMean(Matrix* m);
 double MatrixStd(Matrix* m);
+Matrix* MatrixSumVals(Matrix* m, int dim);
 Matrix* MatrixMaxVals(Matrix* m, int dim);
 Matrix* MatrixMinVals(Matrix* m, int dim);
 Matrix* MatrixMeanVals(Matrix* m, int dim);
@@ -122,3 +127,45 @@ Matrix* MatrixScalarMul(Matrix* m, double x);
 Matrix* MatrixScalarDiv(Matrix* m, double x);
 Matrix* MatrixMultiply(Matrix* m, Matrix* n);
 double MatrixLogDeterminant(Matrix* m);
+Matrix* MatrixPower(Matrix* m, double exp);
+Matrix* MatrixOnesLike(Matrix* m);
+Matrix* MatrixZerosLike(Matrix* m);
+Matrix* MatrixFull(int rows, int cols, double value);
+Matrix* MatrixFullLike(Matrix* m, double value);
+void MatrixFill(Matrix* m, double value);
+Matrix* MatrixReshape(Matrix* m, int rows, int cols);
+Matrix* MatrixFlatten(Matrix* m);
+Matrix* MatrixClip(Matrix* m, double min, double max);
+Matrix* MatrixSin(Matrix* m);
+Matrix* MatrixCos(Matrix* m);
+Matrix* MatrixTan(Matrix* m);
+Matrix* MatrixArcSin(Matrix* m);
+Matrix* MatrixArcCos(Matrix* m);
+Matrix* MatrixArcTan(Matrix* m);
+Matrix* MatrixSinh(Matrix* m);
+Matrix* MatrixCosh(Matrix* m);
+Matrix* MatrixTanh(Matrix* m);
+Matrix* MatrixArcSinh(Matrix* m);
+Matrix* MatrixArcCosh(Matrix* m);
+Matrix* MatrixArcTanh(Matrix* m);
+Matrix* MatrixCumSum(Matrix* m);
+Matrix* MatrixArange(double start, double end, double step);
+Matrix* MatrixLog(Matrix* m);
+Matrix* MatrixLog10(Matrix* m);
+Matrix* MatrixLog2(Matrix* m);
+Matrix* MatrixLog1p(Matrix* m);
+Matrix* MatrixReciprocal(Matrix* m);
+Matrix* MatrixFabs(Matrix* m);
+Matrix* MatrixSqrt(Matrix* m);
+Matrix* MatrixRSqrt(Matrix* m);
+double MatrixProd(Matrix* m);
+Matrix* MatrixCumProd(Matrix* m);
+Matrix* MatrixLerp(Matrix* m, Matrix* n, double weight);
+Matrix* MatrixNeg(Matrix* m);
+int MatrixNumel(Matrix* m);
+Matrix* MatrixSign(Matrix* m);
+Matrix* MatrixEq(Matrix* m, Matrix* n);
+Matrix* MatrixLT(Matrix* m, Matrix* n);
+Matrix* MatrixGT(Matrix* m, Matrix* n);
+Matrix* MatrixExp(Matrix* m);
+Matrix* MatrixLogSumExp(Matrix* m);
