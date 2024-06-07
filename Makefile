@@ -1,12 +1,12 @@
 CC = gcc
 CFLAGS = -fPIC -Wall -Werror
 LDFLAGS = -shared -lm
-TARGET = flash.so
+TARGET = libflash.so
 SRC = flash.c
 OBJ = $(SRC:.c=.o)
 INCLUDE = flash.h
-INSTALL_DIR_LIB = /usr/local/lib
-INSTALL_DIR_INCLUDE = /usr/local/include
+INSTALL_DIR_LIB = /usr/lib
+INSTALL_DIR_INCLUDE = /usr/include
 
 all: $(TARGET)
 
