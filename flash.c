@@ -367,7 +367,7 @@ void PrintMatrix(Matrix* m) {
 
 Matrix* RandMatrix(int rows, int cols, int seed) {
     if (seed != 0) {
-        srand(0);
+        srand(seed);
     } else {
         srand(time(NULL));
     }
@@ -1030,6 +1030,24 @@ double MatrixStd(Matrix* m) {
     return sqrt(out / num_el);
 }
 
+int MatrixArgMax(Matrix* m) {
+    for (int i = 0; i < m->rows*m->cols; i++) {
+        if (m->data[i] == MatrixMax(m)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int MatrixArgMin(Matrix* m) {
+    for (int i = 0; i < m->rows*m->cols; i++) {
+        if (m->data[i] == MatrixMin(m)) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 Matrix* MatrixSumVals(Matrix* m, int dim) {
     double sum = 0.0;
     if (dim == 0) {
@@ -1177,6 +1195,74 @@ Matrix* MatrixStdVals(Matrix* m, int dim) {
             col_sum = 0.0;
         }
         return out_m;
+    } else {
+        return NULL;
+    }
+}
+
+Matrix* MatrixArgMaxVals(Matrix* m, int dim) {
+    assert(dim >= 0 && dim < 2);
+
+    if (dim == 0) {
+        Matrix* out = InitMatrix(m->rows, 1);
+        Matrix* max_m = MatrixMaxVals(m, 0);
+
+        for (int i = 0; i < m->rows; i++) {
+            for (int j = 0; j < m->cols; j++) {
+                if (max_m->data[i] == MAT_AT(m, i, j)) {
+                    out->data[i] = j;
+                }
+            }
+        }
+        free(max_m);
+        return out;
+    } else if (dim == 1) {
+        Matrix* out = InitMatrix(1, m->cols);
+        Matrix* max_m = MatrixMaxVals(m, 1);
+
+        for (int j = 0; j < m->cols; j++) {
+            for (int i = 0; i < m->rows; i++) {
+                if (max_m->data[j] == MAT_AT(m, i, j)) {
+                    out->data[j] = i;
+                }
+            }
+        }
+        free(max_m);
+        return out;
+    } else {
+        return NULL;
+    }
+}
+
+Matrix* MatrixArgMinVals(Matrix* m, int dim) {
+    assert(dim >= 0 && dim < 2);
+
+    if (dim == 0) {
+        Matrix* out = InitMatrix(m->rows, 1);
+        Matrix* min_m = MatrixMinVals(m, 0);
+
+        for (int i = 0; i < m->rows; i++) {
+            for (int j = 0; j < m->cols; j++) {
+                if (min_m->data[i] == MAT_AT(m, i, j)) {
+                    out->data[i] = j;
+                }
+            }
+        }
+        free(min_m);
+        return out;
+    } else if (dim == 1) {
+        Matrix* out = InitMatrix(1, m->cols);
+        Matrix* min_m = MatrixMinVals(m, 1);
+
+        for (int j = 0; j < m->cols; j++) {
+            for (int i = 0; i < m->rows; i++) {
+                if (min_m->data[j] == MAT_AT(m, i, j)) {
+                    out->data[j] = i;
+                }
+            }
+        }
+        free(min_m);
+        return out;
     } else {
         return NULL;
     }
@@ -1810,4 +1896,120 @@ void MatrixResize(Matrix* m, int rows, int cols) {
 void MatrixResizeAs(Matrix* m, Matrix* n) {
     m->rows = n->rows;
     m->cols = n->cols;
+}
+
+void swap(double* a, double* b) {
+    double temp = *a;
+    *a = *b;
+    *b = temp;
+}
+
+int parition(double arr[], int low, int high) {
+    double pivot = arr[high];
+    int i = (low - 1);
+
+    for (int j = low; j <= high - 1; j++) {
+        if (arr[j] <= pivot) {
+            i++;
+            swap(&arr[i], &arr[j]);
+        }
+    }
+    swap(&arr[i+1], &arr[high]);
+    return (i + 1);
+}
+
+void quick_sort(double arr[], int low, int high) {
+    if (low < high) {
+        int pi = parition(arr, low, high);
+
+        quick_sort(arr, low , pi-1);
+        quick_sort(arr, pi+1, high);
+    }
+}
+
+void MatrixSort(Matrix* m) {
+    int size = m->rows * m->cols;
+    quick_sort(m->data, 0, size - 1);
+}
+
+Matrix* MatrixArgSort(Matrix* m) {
+    Matrix* m_copy = MatrixCopy(m);
+    Matrix* out = InitMatrix(m->rows, m->cols);
+    MatrixSort(m);
+
+    for (int i = 0; i < m->rows*m->cols; i++) {
+        for (int j = 0; j < m_copy->rows*m_copy->cols; j++) {
+            if (m->data[i] == m_copy->data[j] && (out->data[i-1] != j)) {
+                out->data[i] = j;
+            }
+        }
+    }
+    FreeMatrix(m_copy);
+    return out;
+}
+
+Matrix* MatrixRepeat(Matrix* m, int rrows, int rcols) {
+    int new_rows = m->rows * rrows;
+    int new_cols = m->cols * rcols;
+    Matrix* out = InitMatrix(new_rows, new_cols);
+
+    for (int i = 0; i < new_rows; i++) {
+        for (int j = 0; j < new_cols; j++) {
+            int orig_i = i % m->rows;
+            int orig_j = j % m->cols;
+            MAT_AT(out, i, j) = MAT_AT(m, orig_i, orig_j);
+        }
+    }
+    return out;
+}
+
+Matrix* MatrixTake(Matrix* m, Matrix* n) {
+    Matrix* out = InitMatrix(n->rows, n->cols);
+
+    for (int i = 0; i < n->rows; i++) {
+        for (int j = 0; j < n->cols; j++) {
+            MAT_AT(out, i, j) = m->data[(int)MAT_AT(n, i, j)];
+        }
+    }
+
+    return out;
+}
+
+double randn() {
+    static int use_last = 0;
+    static double y2;
+    double x1, x2, w, y1;
+
+    if (use_last) {
+        y1 = y2;
+        use_last = 0;
+    } else {
+        do {
+            x1 = 2.0 * rand() / (double)RAND_MAX - 1.0;
+            x2 = 2.0 * rand() / (double)RAND_MAX - 1.0;
+            w = x1*x1 + x2*x2;
+        } while (w >= 1.0 || w == 0.0);
+
+        w = sqrt((-2.0 * log(w)) / w);
+        y1 = x1 * w;
+        y2 = x2 * w;
+        use_last = 1;
+    }
+    return y1;
+}
+
+Matrix* RandnMatrix(int rows, int cols, int seed) {
+    if (seed != 0) {
+        srand(seed);
+    } else {
+        srand(time(NULL));
+    }
+
+    Matrix* out = InitMatrix(rows, cols);
+    if (out == NULL) return NULL;
+
+    for (int i = 0; i < rows*cols; i++) {
+        out->data[i] = randn();
+    }
+    return out;
 }
