@@ -476,7 +476,7 @@ Matrix* MatrixMul(Matrix* m, Matrix* n) {
             for (int k = 0; k < m->cols; k++) {
                 sum += MAT_AT(m, i, k) * MAT_AT(n, k, j);
             }
-            out->data[i * out->cols + j] = sum;
+            MAT_AT(out, i, j) = sum;
         }
     }
     return out;
@@ -1411,7 +1411,7 @@ Matrix* MatrixScalarDiv(Matrix* m, double x) {
     return out;
 }
 
-Matrix* MatrixMultiply(Matrix* m, Matrix* n) {
+Matrix* MatrixDotProduct(Matrix* m, Matrix* n) {
     assert(m->rows == n->rows && m->cols == n->cols);
     Matrix* out = MatrixCopy(m);
 
@@ -2012,4 +2012,8 @@ Matrix* RandnMatrix(int rows, int cols, int seed) {
         out->data[i] = randn();
     }
     return out;
+}
+
+void MatrixShape(Matrix* m) {
+    printf("(%d, %d)\n", m->rows, m->cols);
 }
