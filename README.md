@@ -23,6 +23,34 @@ make clean
 sudo make uninstall
 ```
 
+## Example
+
+### Initializing and Freeing a Matrix 
+```c
+int main() {
+    Matrix* m = InitMatrix(4, 2); // Initializes a matrix
+    double m_data[] = {1, 2, 3, 4, 5, 6, 7, 8};
+    SetElements(m, m_data); // you can also do m->data = m_data;
+    // NOTE: if you set the elements with m->data, make sure the number of elements 
+    //       in the array are equal to product of rows and cols of the matrix.
+
+    PrintMatrix(m); // prints the matrix
+
+    FreeMatrix(m); // frees the memory allocated to the matrix. DO NOT FORGET TO FREE THE MATRIX.
+
+    return 0;
+}
+```
+
+```Output 
+Matrix(data=(
+[[  1.00000   2.00000  ]
+ [  3.00000   4.00000  ]
+ [  5.00000   6.00000  ]
+ [  7.00000   8.00000  ]]
+), size=(4, 2))
+```
+
 ## Docs
 
 ### Vector Functions
