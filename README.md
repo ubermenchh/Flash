@@ -1,5 +1,7 @@
 # Flash
-<img src="./flash.png" width=700 height=300>
+<div align="center">
+    <img src="./flash.png" width=400 height=400>
+</div>
 
 A little linear algebra library.
 
