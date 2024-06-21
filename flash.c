@@ -1796,7 +1796,7 @@ Matrix* MatrixNeg(Matrix* m) {
 
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
-            MAT_AT(out, i, j) *= -1;
+            MAT_AT(out, i, j) =  -1 * MAT_AT(m, i, j);
         }
     }
     return out;
