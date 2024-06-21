@@ -1411,7 +1411,7 @@ Matrix* MatrixScalarDiv(Matrix* m, double x) {
     return out;
 }
 
-Matrix* MatrixDotProduct(Matrix* m, Matrix* n) {
+Matrix* MatrixMultiply(Matrix* m, Matrix* n) {
     assert(m->rows == n->rows && m->cols == n->cols);
     Matrix* out = MatrixCopy(m);
 
@@ -1419,6 +1419,16 @@ Matrix* MatrixDotProduct(Matrix* m, Matrix* n) {
         for (int j = 0; j < out->cols; j++) {
             MAT_AT(out, i, j) *= MAT_AT(n, i, j);
         }
+    }
+    return out;
+}
+
+Matrix* MatrixDivide(Matrix* m, Matrix* n) {
+    assert(m->rows == n->rows && m->cols == n->cols);
+    Matrix* out = MatrixCopy(m);
+    
+    for (int i = 0; i < out->rows*out->cols; i++) {
+        out->data[i] /= n->data[i];
     }
     return out;
 }
