@@ -466,6 +466,24 @@ Matrix* IdentityMatrix(int side) {
     return out;
 }
 
+Matrix* MatrixMask(int rows, int cols, double prob) {
+    Matrix* out = OnesMatrix(rows, cols);
+    if (out == NULL) return NULL;
+
+    srand(time(NULL));
+    int total_elems = rows*cols;
+    int num_zeros = (int)(total_elems * prob);
+    
+    for (int i = 0; i < num_zeros; i++) {
+        int index;
+        do {
+            index = rand() % total_elems;
+        } while (out->data[index] == 0.0);
+        out->data[index] = 0.0;
+    }
+    return out;
+}
+
 Matrix* MatrixMul(Matrix* m, Matrix* n) {
     assert(m->cols == n->rows);
     Matrix* out = InitMatrix(m->rows, n->cols);

@@ -76,6 +76,7 @@ Matrix* MatrixScale(Matrix* m, int x);
 Matrix* MatrixTranspose(Matrix* m);
 Matrix* OnesMatrix(int rows, int cols);
 Matrix* ZerosMatrix(int rows, int cols);
+Matrix* MatrixMask(int rows, int cols, double prob);
 Matrix* IdentityMatrix(int side);
 Matrix* MatrixMul(Matrix* m, Matrix* n);
 Matrix* MatrixSlice(Matrix* m, int from_rows, int to_rows, int from_cols, int to_cols);
