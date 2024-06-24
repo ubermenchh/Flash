@@ -391,6 +391,7 @@ Matrix* MatrixAdd(Matrix* m, Matrix* n) {
 
     Matrix* out = InitMatrix(out_rows, out_cols);
 
+#pragma omp parallel for collapse(2)
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
             double m_val = MAT_AT(m, (m->rows == 1) ? 0 : i, (m->cols == 1) ? 0 : j);
@@ -410,6 +411,7 @@ Matrix* MatrixSub(Matrix* m, Matrix* n) {
 
     Matrix* out = InitMatrix(out_rows, out_cols);
 
+#pragma omp parallel for collapse(2)
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
             double m_val = MAT_AT(m, (m->rows == 1) ? 0 : i, (m->cols == 1) ? 0 : j);
@@ -422,6 +424,7 @@ Matrix* MatrixSub(Matrix* m, Matrix* n) {
 Matrix* MatrixScale(Matrix* m, int x) {
     Matrix* out = InitMatrix(m->rows, m->cols);
 
+#pragma omp parallel for collapse(2)
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
             MAT_AT(out, i, j) = MAT_AT(m, i, j) * x;
@@ -433,6 +436,7 @@ Matrix* MatrixScale(Matrix* m, int x) {
 Matrix* MatrixTranspose(Matrix* m) {
     Matrix* out = InitMatrix(m->cols, m->rows);
 
+#pragma omp parallel for collapse(2)
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
             MAT_AT(out, j, i) = MAT_AT(m, i, j);
@@ -450,6 +454,7 @@ Matrix* ZerosMatrix(int rows, int cols) {
 
 Matrix* OnesMatrix(int rows, int cols) {
     Matrix* out = InitMatrix(rows, cols);
+#pragma omp parallel for collapse(2)
     for (int i = 0; i < out->rows; i++) {
         for (int j = 0; j < out->cols; j++) {
             MAT_AT(out, i, j) = 1.0;
@@ -488,6 +493,7 @@ Matrix* MatrixMul(Matrix* m, Matrix* n) {
     assert(m->cols == n->rows);
     Matrix* out = InitMatrix(m->rows, n->cols);
 
+#pragma omp parallel for
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < n->cols; j++) {
             double sum = 0.0;
@@ -505,6 +511,7 @@ Matrix* MatrixSlice(Matrix* m, int from_rows, int to_rows, int from_cols, int to
     int new_rows = to_rows - from_rows;
     int new_cols = to_cols - from_cols;
 
+#pragma omp parallel for collapse(2)
     Matrix* out = InitMatrix(new_rows, new_cols);
     for (int i = from_rows, out_i = 0; (i < to_rows && out_i < out->rows); i++, out_i++) {
         for (int j = from_cols, out_j = 0; (j < to_cols && out_j < out->cols); j++, out_j++) {
@@ -523,6 +530,7 @@ MatrixTuple LUDecomposition(Matrix* A) {
 
     for (int i = 0; i < n; i++) {
         // upper triangular
+#pragma omp parallel for
         for (int k = 0; k < n; k++) {
             double sum = 0.0;
             for (int j = 0; j < i; j++) {
@@ -532,6 +540,7 @@ MatrixTuple LUDecomposition(Matrix* A) {
         }
 
         // lower triangular
+#pragma omp parallel for
         for (int k = i + 1; k < n; k++) {
             double sum = 0.0;
             for (int j = 0; j < i; j++) {
@@ -557,10 +566,10 @@ double MatrixDeterminant(Matrix* m) {
         out = (m->data[0] * m->data[3]) - (m->data[1] * m->data[2]);
         //printf("%f\n", out);
     } else {
+#pragma omp parallel for
         for (int i = 0; i < n; i++) {
             Matrix* submatrix = InitMatrix(n-1, n-1);
             int sub_row = 0, sub_col = 0;
-
             for (int j = 1; j < n; j++) {
                 if (j != 0) {
                     for (int k = 0; k < n; k++) {
@@ -597,6 +606,7 @@ double MatrixTrace(Matrix* m) {
 
 double FrobeniusNorm(Matrix* m) {
     double out = 0.0;
+#pragma omp parallel for
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
             out += MAT_AT(m, i, j) * MAT_AT(m, i, j);
@@ -608,6 +618,7 @@ double FrobeniusNorm(Matrix* m) {
 double L1Norm(Matrix* m) {
     double out = 0.0;
 
+#pragma omp parallel for
     for (int i = 0; i < m->rows; i++) {
         double col_sum = 0.0;
         for (int j = 0; j < m->cols; j++) {

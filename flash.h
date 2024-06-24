@@ -6,6 +6,10 @@
 #include <assert.h>
 #include <string.h>
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 #define MAT_AT(m, i, j) (m)->data[(i) * (m)->cols + (j)]
 #define ATOL 1e-08
 #define RTOL 1e-05
