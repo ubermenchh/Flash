@@ -326,7 +326,8 @@ void PrintMatrix(Matrix* m) {
     int max_digits = 0;
     double max_val = 0.0;
     double min_val = 0.0;
-
+    
+#pragma omp parallel for
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
             double val = fabs(MAT_AT(m, i, j));
@@ -492,11 +493,12 @@ Matrix* MatrixMask(int rows, int cols, double prob) {
 Matrix* MatrixMul(Matrix* m, Matrix* n) {
     assert(m->cols == n->rows);
     Matrix* out = InitMatrix(m->rows, n->cols);
-
-#pragma omp parallel for
+    
+#pragma omp parallel for collapse(2)
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < n->cols; j++) {
             double sum = 0.0;
+#pragma omp simd reduction(+:sum)
             for (int k = 0; k < m->cols; k++) {
                 sum += MAT_AT(m, i, k) * MAT_AT(n, k, j);
             }
@@ -511,7 +513,6 @@ Matrix* MatrixSlice(Matrix* m, int from_rows, int to_rows, int from_cols, int to
     int new_rows = to_rows - from_rows;
     int new_cols = to_cols - from_cols;
 
-#pragma omp parallel for collapse(2)
     Matrix* out = InitMatrix(new_rows, new_cols);
     for (int i = from_rows, out_i = 0; (i < to_rows && out_i < out->rows); i++, out_i++) {
         for (int j = from_cols, out_j = 0; (j < to_cols && out_j < out->cols); j++, out_j++) {
@@ -527,10 +528,10 @@ MatrixTuple LUDecomposition(Matrix* A) {
 
     Matrix* L = InitMatrix(n, n);
     Matrix* U = InitMatrix(n, n);
-
+#pragma omp parallel 
     for (int i = 0; i < n; i++) {
         // upper triangular
-#pragma omp parallel for
+#pragma omp for schedule(dynamic)
         for (int k = 0; k < n; k++) {
             double sum = 0.0;
             for (int j = 0; j < i; j++) {
@@ -540,7 +541,7 @@ MatrixTuple LUDecomposition(Matrix* A) {
         }
 
         // lower triangular
-#pragma omp parallel for
+#pragma omp for schedule(dynamic)
         for (int k = i + 1; k < n; k++) {
             double sum = 0.0;
             for (int j = 0; j < i; j++) {
@@ -549,7 +550,8 @@ MatrixTuple LUDecomposition(Matrix* A) {
             MAT_AT(L, k, i) = (MAT_AT(A, k, i) - sum) / MAT_AT(U, i, i);
         }
     
-        // diagonal elements of L 
+        // diagonal elements of L
+#pragma omp single
         MAT_AT(L, i, i) = 1.0;
     }
     return (MatrixTuple){L, U}; 
@@ -566,7 +568,6 @@ double MatrixDeterminant(Matrix* m) {
         out = (m->data[0] * m->data[3]) - (m->data[1] * m->data[2]);
         //printf("%f\n", out);
     } else {
-#pragma omp parallel for
         for (int i = 0; i < n; i++) {
             Matrix* submatrix = InitMatrix(n-1, n-1);
             int sub_row = 0, sub_col = 0;
