@@ -1442,12 +1442,20 @@ Matrix* MatrixScalarDiv(Matrix* m, double x) {
 }
 
 Matrix* MatrixMultiply(Matrix* m, Matrix* n) {
-    assert(m->rows == n->rows && m->cols == n->cols);
-    Matrix* out = MatrixCopy(m);
+    int out_rows = (m->rows > n->rows) ? m->rows : n->rows;
+    int out_cols = (m->cols > n->cols) ? m->cols : n->cols;
 
-    for (int i = 0; i < out->rows; i++) {
-        for (int j = 0; j < out->cols; j++) {
-            MAT_AT(out, i, j) *= MAT_AT(n, i, j);
+    assert(m->rows == n->rows || m->rows == 1 || n->rows == 1);
+    assert(m->cols == n->cols || m->cols == 1 || n->cols == 1);
+
+    Matrix* out = InitMatrix(out_rows, out_cols);
+
+#pragma omp parallel for collapse(2)
+    for (int i = 0; i < m->rows; i++) {
+        for (int j = 0; j < m->cols; j++) {
+            double m_val = MAT_AT(m, (m->rows == 1) ? 0 : i, (m->cols == 1) ? 0 : j);
+            double n_val = MAT_AT(n, (n->rows == 1) ? 0 : i, (n->cols == 1) ? 0 : j);
+           MAT_AT(out, i, j) = m_val * n_val;
         }
     }
     return out;
