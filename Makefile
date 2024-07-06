@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -fPIC -Wall -Werror
+CFLAGS = -fPIC -Wall -Werror -fopenmp
 LDFLAGS = -shared -lm
 TARGET = libflash.so
 SRC = flash.c

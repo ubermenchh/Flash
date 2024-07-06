@@ -1718,7 +1718,7 @@ Matrix* MatrixLog(Matrix* m) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            MAT_AT(out, i, j) = log(MAT_AT(out, i, j));
+            MAT_AT(out, i, j) = log(MAT_AT(m, i, j));
         }
     }
     return out;
@@ -1729,7 +1729,7 @@ Matrix* MatrixLog10(Matrix* m) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            MAT_AT(out, i, j) = log10(MAT_AT(out, i, j));
+            MAT_AT(out, i, j) = log10(MAT_AT(m, i, j));
         }
     }
     return out;
@@ -1740,7 +1740,7 @@ Matrix* MatrixLog2(Matrix* m) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            MAT_AT(out, i, j) = log2(MAT_AT(out, i, j));
+            MAT_AT(out, i, j) = log2(MAT_AT(m, i, j));
         }
     }
     return out;
@@ -1751,7 +1751,7 @@ Matrix* MatrixLog1p(Matrix* m) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            MAT_AT(out, i, j) = log1p(MAT_AT(out, i, j));
+            MAT_AT(out, i, j) = log1p(MAT_AT(m, i, j));
         }
     }
     return out;
@@ -1762,7 +1762,7 @@ Matrix* MatrixReciprocal(Matrix* m) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            MAT_AT(out, i, j) = (1 / MAT_AT(out, i, j));
+            MAT_AT(out, i, j) = (1 / MAT_AT(m, i, j));
         }
     }
     return out;
@@ -1773,7 +1773,7 @@ Matrix* MatrixFabs(Matrix* m) {
 
     for (int i = 0; i < m->rows; i++) {
         for (int j = 0; j < m->cols; j++) {
-            MAT_AT(out, i, j) = fabs(MAT_AT(out, i, j));
+            MAT_AT(out, i, j) = fabs(MAT_AT(m, i, j));
         }
     }
     return out;
