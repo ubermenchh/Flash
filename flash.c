@@ -2063,3 +2063,9 @@ Matrix* RandnMatrix(int rows, int cols, int seed) {
 void MatrixShape(Matrix* m) {
     printf("(%d, %d)\n", m->rows, m->cols);
 }
+
+Matrix* MatrixBroadcast(Matrix* m, int rows, int cols) {
+    assert(m->rows*m->cols == 1);
+    Matrix* out = MatrixFull(rows, cols, m->data[0]);
+    return out;
+}

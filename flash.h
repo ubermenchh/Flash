@@ -191,5 +191,6 @@ Matrix* MatrixArgMaxVals(Matrix* m, int dim);
 Matrix* MatrixArgMinVals(Matrix* m, int dim);
 Matrix* RandnMatrix(int rows, int cols, int seed);
 void MatrixShape(Matrix* m);
+Matrix* MatrixBroadcast(Matrix* m, int rows, int cols);
 
 #endif // flash_h
