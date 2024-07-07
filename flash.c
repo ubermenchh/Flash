@@ -1519,10 +1519,8 @@ Matrix* MatrixReshape(Matrix* m, int rows, int cols) {
     assert(m->rows * m->cols == rows * cols);
     Matrix* out = InitMatrix(rows, cols);
 
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            MAT_AT(out, i, j) = MAT_AT(m, i, j);
-        }
+    for (int i = 0; i < rows*cols; i++) {
+        out->data[i] = m->data[i];
     }
     return out;
 }

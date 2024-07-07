@@ -1,3 +1,6 @@
+#ifndef flash_h
+#define flash_h
+
 #include <stdio.h>
 #include <math.h>
 #include <stdbool.h>
@@ -188,3 +191,5 @@ Matrix* MatrixArgMaxVals(Matrix* m, int dim);
 Matrix* MatrixArgMinVals(Matrix* m, int dim);
 Matrix* RandnMatrix(int rows, int cols, int seed);
 void MatrixShape(Matrix* m);
+
+#endif // flash_h
